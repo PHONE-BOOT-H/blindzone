@@ -1,0 +1,87 @@
+# ============================
+# OS 시스템 파일
+# ============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================
+# 에디터 (개인 설정, 팀 공유 X)
+# ============================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================
+# 비밀 / 환경변수
+# ============================
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets.json
+credentials.json
+service-account*.json
+
+# ============================
+# Python (Gemini SDK, 데이터 분석 등)
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ============================
+# Node.js (TypeScript/JavaScript)
+# ============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+.pnp.*
+
+# ============================
+# 빌드 결과물 / 캐시
+# ============================
+dist/
+build/
+out/
+.next/
+.nuxt/
+*.tsbuildinfo
+.cache/
+.parcel-cache/
+
+# ============================
+# 로그
+# ============================
+*.log
+logs/
+
+# ============================
+# 캡스톤 프로젝트 특화
+# ============================
+# 원본 데이터 (NVIDIA Personas 등 큰 파일, git에 부적합)
+data/raw/
+data/external/
+data/*.csv
+data/*.json
+!data/sample/
+
+# 현장조사 미디어 (사진, 영상 원본)
+media/raw/
+media/full/
+
+# 개인 메모/스크래치
+notes/personal/
+scratch/
+
+# Notion 백업 export
+notion-exports/
