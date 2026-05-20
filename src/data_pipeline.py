@@ -106,3 +106,37 @@ def aggregate_accidents_by_sgg(df: pd.DataFrame) -> pd.DataFrame:
     grouped["fatality_rate"] = grouped["fatality_count"] / grouped["accident_count"]
     grouped["fatality_rate"] = grouped["fatality_rate"].fillna(0)
     return grouped
+
+
+def load_sgg_centers(geojson_path) -> gpd.GeoDataFrame:
+    """시군구 폴리곤 → 중심점 + 면적(km^2).
+
+    GeoJSON 컬럼 alias 자동 매핑:
+    - 시군구코드: 'SIG_CD' | '시군구코드' | 'code'
+    - 시군구명: 'KOR_NM' | '시군구명' | 'name'
+    """
+    gdf = gpd.read_file(geojson_path)
+
+    code_col = next(
+        (c for c in gdf.columns
+         if "SIG_CD" in c.upper() or "시군구코드" in c or c.lower() == "code"),
+        None,
+    )
+    name_col = next(
+        (c for c in gdf.columns
+         if "KOR_NM" in c.upper() or "시군구명" in c or c.lower() == "name"),
+        None,
+    )
+    if code_col is None:
+        raise ValueError(f"시군구코드 컬럼 못 찾음. columns: {list(gdf.columns)}")
+
+    gdf = gdf.rename(columns={code_col: "sgg_code", name_col: "sgg_name"})
+    gdf["sgg_code"] = gdf["sgg_code"].apply(normalize_sgg_code)
+    gdf = to_korean_crs(gdf)
+    gdf["area_km2"] = gdf.geometry.area / 1_000_000
+    gdf["centroid"] = gdf.geometry.centroid
+
+    centers = gdf[["sgg_code", "sgg_name", "area_km2", "centroid"]].rename(
+        columns={"centroid": "geometry"}
+    )
+    return gpd.GeoDataFrame(centers, geometry="geometry", crs=CRS_KOREA)
