@@ -41,3 +41,19 @@ def render(features: pd.DataFrame):
         st.subheader("전국 위험지도")
         m = build_risk_map(features, selected_sgg=sgg_name)
         st_folium(m, width=None, height=600, returned_objects=[])
+
+    st.divider()
+    st.subheader("전국 상위 잠재 위험지대 TOP 10")
+    top = features.nlargest(10, "risk_index")[
+        ["sgg_name", "risk_index", "accident_count", "fatality_rate", "ems_response_min", "ems_distance_km"]
+    ].rename(
+        columns={
+            "sgg_name": "시군구",
+            "risk_index": "위험지수",
+            "accident_count": "사고건수",
+            "fatality_rate": "사망사고비율",
+            "ems_response_min": "평균출동(분)",
+            "ems_distance_km": "응급기관거리(km)",
+        }
+    )
+    st.dataframe(top, use_container_width=True, hide_index=True)
