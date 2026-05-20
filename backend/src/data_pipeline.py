@@ -121,12 +121,14 @@ def load_sgg_centers(geojson_path) -> gpd.GeoDataFrame:
 
     code_col = next(
         (c for c in gdf.columns
-         if "SIG_CD" in c.upper() or "시군구코드" in c or c.lower() == "code"),
+         if "SIG_CD" in c.upper() or "SIGUNGU_CD" in c.upper()
+         or "시군구코드" in c or c.lower() == "code"),
         None,
     )
     name_col = next(
         (c for c in gdf.columns
-         if "KOR_NM" in c.upper() or "시군구명" in c or c.lower() == "name"),
+         if "KOR_NM" in c.upper() or "SIGUNGU_NM" in c.upper()
+         or "시군구명" in c or c.lower() == "name"),
         None,
     )
     if code_col is None:

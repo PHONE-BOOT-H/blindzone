@@ -12,7 +12,7 @@ def main():
     features = build_grid_features(
         accidents_csv=DATA_RAW / "taas_다발지역.csv",
         ems_csv=DATA_RAW / "응급의료기관.csv",
-        sgg_geojson=DATA_RAW / "시군구_경계.geojson",
+        sgg_geojson=DATA_RAW / "BND_SIGUNGU_PG" / "BND_SIGUNGU_PG.shp",
     )
     GRID_FEATURES_PATH.parent.mkdir(parents=True, exist_ok=True)
     features.to_parquet(GRID_FEATURES_PATH, index=False)
