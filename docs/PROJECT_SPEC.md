@@ -175,13 +175,49 @@ project-root/
 
 ---
 
+## 데이터 출처 (확정)
+
+| 데이터 | 출처 | 라이선스 |
+|---|---|---|
+| 전국교통사고다발지역표준데이터 | 공공데이터포털 / TAAS | 공공데이터포털 표준 |
+| 응급의료기관 정보 | 공공데이터포털 오픈 API / 국립중앙의료원 | 활용 신청 승인 |
+| 119 구급통계 (사고-구급 출동 빈도) | 공공데이터포털 오픈 API / 소방청 | 활용 신청 승인 |
+| 시군구 행정구역 경계 (센서스경계) | 브이월드 / 통계청 | **CC BY-NC-ND** (출처표시·비영리·변경금지) |
+
+자세히는 `docs/submission/data_manifest.md`.
+
+---
+
+## 정직성 원칙 (절대)
+
+산출물(About / README / 기획서 / 발표) 작성 시 다음 8가지 위험 표현을 **반드시** 정확하게:
+
+| 위험 표현 | 정정 |
+|---|---|
+| "사고 위험을 예측한다" | "공개 데이터로 정의한 잠재 위험지수를 계산·설명한다" |
+| "응급 도착시간" | "응급의료기관 거리 기반 추정 접근시간 (60km/h 가정)" |
+| "정책 효과를 예측한다" | "거리 기반 접근성 지표 변화 민감도 분석" |
+| "연간 사고 건수" | "TAAS 사고다발지역 데이터 내 사고 건수" |
+| "기존 일반인용 서비스 부재" | "기존 사고다발지도는 빈도 중심, 본 프로젝트는 응급 접근성 결합 탐색" |
+| "주관기관 4종 결합" | "공공데이터 4종 결합" |
+| "AI 가점 15점 확보" | "가점 신청 (부여는 심사위원단 판단)" |
+| "R² > 0.5 = 사고 예측 성능" | "정의된 잠재 위험지수에 대한 surrogate model 재현도" |
+
+근거·자세히는 `docs/submission/model_card.md`, `docs/submission/external-review-2026-05-20.md`.
+
+---
+
 ## 미결 사항
 
-- [ ] **시군구 GeoJSON 새 출처**: VWORLD([dsId=30604](https://www.vworld.kr/dtmk/dtmk_ntads_s002.do?dsId=30604))에서 한태영 다운로드 중. 받으면 backend/data/raw/ 교체 + build_features 재실행
-- [ ] "잠재 위험 지수" 정확한 수식 검증 — EDA 단계에서 분포·실제 의미 확인 (현재 가중합 0.4/0.3/0.3, ems_response_min과 ems_distance_km가 사실상 중복 — 단순화 가능)
-- [ ] FastAPI endpoint 정확한 응답 schema 설계
-- [ ] Next.js 페이지·컴포넌트 분해 (writing-plans skill로 구체화 예정)
-- [ ] Vercel 배포 시 환경변수 (`NEXT_PUBLIC_API_BASE_URL` 등)
-- [ ] Railway 배포 시 `xgb_risk_model.pkl` 로드 방식 (build 시 train 또는 git에 포함)
-- [ ] 발표 영상 도구 (OBS / Loom / 기타)
-- [ ] AI 학습도구 증빙자료 (Claude Code 사용 로그·스크린샷) 준비 방식
+- [x] ~~시군구 GeoJSON 새 출처~~ → 통계청 (센서스경계) VWORLD SHP 받음 (`BND_SIGUNGU_PG.shp`, 252 시군구, BASE_DATE 20250630)
+- [x] ~~데이터 갱신 후 재학습~~ → 완료. R²=0.90, MAE=0.0079
+- [ ] FastAPI endpoint 설계 — Plan v2에서 5개 endpoint (health/features/detail/top10/simulate) + 신규 1개 (`/api/contrast` — 사고건수 TOP10 vs BlindZone TOP10 비교, 독창성 강화)
+- [ ] **SHAP 사전 계산** (Plan v2 반영) — API 실시간 X, `feature_details.parquet`에 미리 저장 → Railway 안정성·응답속도
+- [ ] **배포용 의존성 분리** — `backend/requirements-api.txt` (FastAPI 런타임 최소, geopandas/shap 제외)
+- [ ] **RiskMap.tsx의 `Map` shadowing 버그** — `import MapLibreMap` + `new globalThis.Map(...)` (Plan v2 반영)
+- [ ] **Polygon choropleth** — centroid scatter 대신 GeoJsonLayer로 시군구 면 색칠 (시각 임팩트)
+- [ ] **대표 사례 1개 발굴** — "사고건수 N위, BlindZone Y위" 비교 케이스 (발표 임팩트)
+- [ ] **공식 제출서류 확인** — 국토교통부 통계누리 공지에서 참가신청서·서약서·기획서 HWP 선확보 (`docs/submission/checklist.md` 작성 예정)
+- [ ] **AI 학습도구 증빙** — Claude Code 사용 기록·스크린샷 정리
+- [ ] **기획서 (3장, 한글 양식)** — 한태영 작성, 메인 텍스트 초안 제공 가능
+- [ ] **데모 영상 (1~2분)** — 한태영 녹화
