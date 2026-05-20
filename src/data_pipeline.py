@@ -7,7 +7,7 @@ import pandas as pd
 from src.config import CRS_KOREA
 
 
-def normalize_sgg_code(code) -> str:
+def normalize_sgg_code(code: object) -> str:
     """시군구코드를 5자리 zero-padded 문자열로 통일.
 
     입력 형태에 무관하게 5자리 문자열을 반환한다.
@@ -54,4 +54,4 @@ def parse_sido_sgg(text: str) -> tuple[str, str]:
     parts = str(text).strip().split(" ", 1)
     if len(parts) == 1:
         return (parts[0], "")
-    return (parts[0], parts[1])
+    return (parts[0], parts[1].strip())

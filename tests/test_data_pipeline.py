@@ -1,4 +1,9 @@
+import math
+
+import geopandas as gpd
 import pandas as pd
+from shapely.geometry import Point
+
 from src.data_pipeline import normalize_sgg_code, to_korean_crs, parse_sido_sgg
 
 
@@ -10,8 +15,6 @@ def test_normalize_sgg_code_pads_to_5_digits():
 
 
 def test_to_korean_crs_converts_wgs84_to_5179():
-    import geopandas as gpd
-    from shapely.geometry import Point
     gdf = gpd.GeoDataFrame({"geometry": [Point(126.978, 37.566)]}, crs="EPSG:4326")
     result = to_korean_crs(gdf)
     assert result.crs.to_string() == "EPSG:5179"
@@ -22,3 +25,24 @@ def test_parse_sido_sgg_splits_correctly():
     assert parse_sido_sgg("서울특별시 동작구") == ("서울특별시", "동작구")
     assert parse_sido_sgg("경기도 수원시 영통구") == ("경기도", "수원시 영통구")
     assert parse_sido_sgg("부산광역시 해운대구") == ("부산광역시", "해운대구")
+
+
+def test_normalize_sgg_code_handles_nan_and_none():
+    assert normalize_sgg_code(math.nan) == ""
+    assert normalize_sgg_code(None) == ""
+
+
+def test_to_korean_crs_handles_missing_crs():
+    gdf = gpd.GeoDataFrame({"geometry": [Point(126.978, 37.566)]}, crs=None)
+    result = to_korean_crs(gdf)
+    assert result.crs.to_string() == "EPSG:5179"
+
+
+def test_parse_sido_sgg_handles_empty_and_single_word():
+    assert parse_sido_sgg("") == ("", "")
+    assert parse_sido_sgg("서울특별시") == ("서울특별시", "")
+
+
+def test_parse_sido_sgg_handles_double_space():
+    # Real data sometimes has double spaces from encoding artifacts
+    assert parse_sido_sgg("서울특별시  동작구") == ("서울특별시", "동작구")
