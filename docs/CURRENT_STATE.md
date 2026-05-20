@@ -5,44 +5,81 @@
 ---
 
 ## 마지막 업데이트
-2026-05-19 — 브레인스토밍·디자인 확정, implementation plan 작성 직전
+2026-05-20 — Streamlit prototype 폐기, 풀스택(Next.js + FastAPI) 전환 진행 중. 시군구 GeoJSON 새 출처 다운로드 대기.
 
 ---
 
 ## 어디까지 왔는지
 
-- 프로젝트 셋업 완료 (goingmerry 템플릿, CLAUDE.md, git 초기화)
-- 대회 요건 파악 완료 (제품/서비스 트랙, 1인 출품, K-MaaS 제외)
-- **아이디어 확정**: BlindZone — 사고위험 × 응급사각지대 융합 발굴 서비스
-- **시제품 형태 확정**: S3 하이브리드 단일 웹앱 (시민 ↔ 정책 모드 토글)
-- **기술 스택 확정**: Streamlit + Folium + XGBoost + SHAP (T1)
-- **데이터 가용성 검증 완료**: TAAS, 전국응급의료기관, 119 통계, 도로망 모두 공개
-- **디자인 스펙 작성·커밋 완료**: `docs/superpowers/specs/2026-05-19-blindzone-design.md` (커밋 `edf858e`)
+**Phase 1~2 (셋업·데이터)** ✅
+- Python venv + requirements (backend로 이동)
+- 디렉토리 구조 + `backend/src/config.py`
+- raw 데이터: TAAS 다발지역 (12,780행), 응급의료기관 (534행), 119 구급통계 (12,789행)
+- 시군구 경계 GeoJSON — **출처 미확인 (구 파일)**. 새로 받기 예정.
+
+**Phase 3 (가공, TDD)** ✅
+- 7개 함수 + 11 unit tests
+- TAAS 시도시군구명 → sgg_code 매핑 (100% 성공, alias 처리 포함)
+- `grid_features.parquet`: 250 시군구 × 12 컬럼 (0 NaN)
+
+**Phase 4 (모델)** ✅
+- XGBoost R²=0.90, MAE=0.0087
+- SHAP 설명 모듈
+- 가상 응급기관 What-if inference 모듈
+
+**Phase 5~7 (Streamlit prototype)** → **폐기** (풀스택 전환)
+- 기존 Streamlit UI 코드 모두 삭제 (commit `eb9a1f5`)
+- 디렉토리 재구조화: 모든 Python 코드 → `backend/`, `frontend/` placeholder (commit `0c30...` 또는 마지막 commit)
+
+**문서 작업**
+- 디자인 스펙: `docs/superpowers/specs/2026-05-19-blindzone-design.md`
+- 이전 implementation plan: `docs/superpowers/plans/2026-05-19-blindzone-implementation.md` (Streamlit 기준 — 새 plan으로 교체 예정)
+- PROJECT_SPEC: 풀스택 + 심사 기준 + 가점 신청(15점) + 1차 양식 (기획서 3장) 반영
+- About 페이지·README: 정정 필요 (이전 Streamlit 시기 산출물에 출처 부정확 — 풀스택 전환 후 같이 정정)
 
 ---
 
 ## 다음 할 일
 
-- [ ] **`writing-plans` skill로 implementation plan 작성** (현재 단계)
-- [ ] Plan 승인 후 데이터 다운로드·EDA 시작 (D+1~2)
-- [ ] 한태영이 [국가교통 데이터 오픈마켓](https://www.bigdata-transportation.kr) FAQ 확인해서 1차 심사 제출물 양식 파악 (병행)
+**즉시**:
+- [ ] **한태영이 VWORLD에서 시군구 경계 받기** (https://www.vworld.kr/dtmk/dtmk_ntads_s002.do?dsId=30604)
+- [ ] 받은 파일 `backend/data/raw/` 배치 (기존 `시군구_경계.geojson` 교체 또는 새 파일명)
+- [ ] `backend/scripts/inspect_data.py` 재실행해서 컬럼 확인 (SHP면 .shp/.dbf/.shx/.prj 함께)
+- [ ] 필요 시 `backend/src/data_pipeline.py`의 컬럼 alias 조정
+- [ ] `backend/scripts/build_features.py` 재실행 → grid_features.parquet 갱신
+- [ ] `backend/src/train.py` 재실행 → xgb_risk_model.pkl 갱신
+- [ ] commit (새 데이터 출처 명시)
+
+**그 다음**:
+- [ ] 새 implementation plan 작성 (writing-plans skill) — 풀스택 Phase 분해
+- [ ] FastAPI 백엔드 작성 (Phase A): endpoints, CORS, 로컬 테스트, 모델 로드
+- [ ] Next.js 프론트 작성 (Phase B): 페이지 3개, 지도, 차트, API 연동
+- [ ] 배포 (Phase C): Vercel + Railway
+- [ ] About/README 정정 + 가점 약화 + 출처 정확화
+- [ ] 기획서 (3장, 한글 양식) 작성
+- [ ] 데모 영상 (1~2분) 녹화
+- [ ] AI 학습도구 증빙자료 (Claude Code 사용 로그) 준비
+- [ ] 최종 점검 + 제출 (2026-05-29 마감)
 
 ---
 
 ## 막힌 곳 / 미해결 질문
 
-- 1차 심사 제출물 정확한 양식·매수 — 대회 사이트 FAQ 확인 필요
-- "잠재 위험 지수" 정확한 수식 — EDA 단계에서 결정
-- 시군구 단위 인사이트 강도 — EDA로 검증, 약하면 1km 격자 전환
+- 시군구 GeoJSON 새 출처 다운로드 — 한태영 작업 중
+- FastAPI endpoint 정확한 응답 schema 설계 (새 plan에서)
+- Railway 배포 시 모델 파일 처리 (git 포함 vs build-time train)
+- AI 학습도구 증빙 형식 (스크린샷? 로그? 코드 PR?)
 
 ---
 
-## 최근 결정 (자세히는 `docs/superpowers/specs/2026-05-19-blindzone-design.md`)
+## 최근 결정 (자세히는 `docs/superpowers/specs/...`)
 
-- 2026-05-19: 프로젝트명 `molit-2026`, 코드네임 `BlindZone`
-- 2026-05-19: 제품/서비스 트랙 + 일반 시상 트랙 (K-MaaS 특별상 제외)
-- 2026-05-19: 도메인 = 교통안전 (C), 영역 = G2-β (사고위험 × 응급사각지대 융합 발굴)
-- 2026-05-19: 시제품 = S3 하이브리드 (시민 모드 메인 + 정책 시뮬레이터 보조)
-- 2026-05-19: 스택 T1 (Streamlit + Folium + XGBoost + SHAP, Python 단일)
+- 2026-05-19: 코드네임 `BlindZone`, 제품/서비스 트랙, K-MaaS 제외
+- 2026-05-19: 도메인 = 교통안전, G2-β (사고위험 × 응급사각지대 융합 발굴)
+- 2026-05-19: ~~T1 (Streamlit + Folium)~~ → **Next.js + FastAPI 풀스택로 변경** (2026-05-20)
 - 2026-05-19: V1 = 시군구 단위, V1.1 = 1km 격자
-- 2026-05-19: AI 가점 = Claude Code(학습 5점) + XGBoost·SHAP(분석 5점) + 데이터융합(5점) = 합 15/25
+- 2026-05-19: AI 가점 신청 — Claude Code(학습) + XGBoost·SHAP(분석) + 데이터 융합 = 합 15점 신청 가능 (심사위원 결정)
+- 2026-05-20: 절대 원칙 — **"없는 것을 지어내지 않는다"** (memory 저장됨). 모든 산출물에 적용.
+- 2026-05-20: 시군구 GeoJSON 출처 미확인 → VWORLD([dsId=30604](https://www.vworld.kr/dtmk/dtmk_ntads_s002.do?dsId=30604))로 새로 받기
+- 2026-05-20: 이전 Streamlit UI 코드 삭제 (`eb9a1f5`), backend/+frontend/ 재구조화
+- 2026-05-20: 시간 제한 없이 깊이 추구 모드 (한태영 페이스)
