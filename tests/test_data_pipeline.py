@@ -62,3 +62,20 @@ def test_aggregate_accidents_groups_by_sgg():
     assert row_11010["accident_count"] == 15
     assert row_11010["fatality_count"] == 1
     assert row_11010["fatality_rate"] == 1 / 15
+
+
+def test_nearest_ems_distance_returns_km():
+    from shapely.geometry import Point
+    from src.data_pipeline import nearest_ems_distance_km
+
+    sgg_centers = gpd.GeoDataFrame(
+        {"sgg_code": ["11010"], "geometry": [Point(953000, 1953000)]},
+        crs="EPSG:5179",
+    )
+    ems = gpd.GeoDataFrame(
+        {"name": ["A응급실"], "geometry": [Point(963000, 1953000)]},
+        crs="EPSG:5179",
+    )
+    out = nearest_ems_distance_km(sgg_centers, ems)
+    assert "ems_distance_km" in out.columns
+    assert abs(out["ems_distance_km"].iloc[0] - 10.0) < 0.01

@@ -57,6 +57,20 @@ def parse_sido_sgg(text: str) -> tuple[str, str]:
     return (parts[0], parts[1].strip())
 
 
+def nearest_ems_distance_km(
+    sgg_centers: gpd.GeoDataFrame, ems: gpd.GeoDataFrame
+) -> gpd.GeoDataFrame:
+    """각 시군구 중심점에서 가장 가까운 응급의료기관까지 거리(km)."""
+    if sgg_centers.crs.to_string() != CRS_KOREA:
+        sgg_centers = sgg_centers.to_crs(CRS_KOREA)
+    if ems.crs is None or ems.crs.to_string() != CRS_KOREA:
+        ems = ems.to_crs(CRS_KOREA) if ems.crs else ems.set_crs("EPSG:4326").to_crs(CRS_KOREA)
+
+    joined = sgg_centers.sjoin_nearest(ems, distance_col="_dist_m")
+    joined["ems_distance_km"] = joined["_dist_m"] / 1000.0
+    return joined[["sgg_code", "geometry", "ems_distance_km"]].drop_duplicates(subset=["sgg_code"])
+
+
 def aggregate_accidents_by_sgg(df: pd.DataFrame) -> pd.DataFrame:
     """사고 raw 데이터를 시군구별로 집계.
 
