@@ -47,12 +47,31 @@
 
 ---
 
+## 🔔 새 세션 시작 시 — 한태영에게 먼저 물어볼 것 (BLOCKING)
+
+한태영이 2026-05-20에 세션을 일시 종료하면서 두 결정을 다음 세션으로 미룸. 새 세션의 Claude는 **첫 응답에서 이 두 질문을 한태영에게 직접 물어볼 것**. 답 받은 후 그에 따라 진행.
+
+**Q1. Plan v2 통째 OK?** 또는 수정 의견?
+- Plan 파일: `docs/superpowers/plans/2026-05-20-blindzone-fullstack-v2-implementation.md`
+- 핵심 결정 사항: Phase 0 완료 ✅ / Phase A (FastAPI 6 endpoint + SHAP 사전계산 + /api/contrast 신규 + requirements 분리) / Phase B (Next.js 3페이지 + RiskMap `Map` shadowing 버그 fix + ContrastPanel + 정직성 8개 표현 정정) / Phase C (Railway + Vercel) / Phase D (제출서류 확인·AI 증빙·대표 사례·기획서·데모영상)
+
+**Q2. Execution 모드?**
+- **a) Subagent-driven** (메인 추천 — 각 task 끝 spec/quality review로 정직성 검증, 외부 평가 권장사항 quality control)
+- b) Inline (한 세션 batch — 빠르지만 quality 약함)
+- c) Hybrid (단순 task는 inline, 핵심 task는 subagent)
+
+한태영 답 받으면:
+1. 옛 task list (#10~#35는 Streamlit 시기 history)는 그대로 두거나 정리
+2. plan v2의 task들을 새로 TaskCreate로 등록
+3. Phase A.0 (SHAP 사전 계산)부터 dispatch 또는 inline 시작
+
+---
+
 ## 다음 할 일
 
-**즉시 (메인 작업)**:
-- [ ] Plan v2 작성 (외부 평가 8개 위험표현 정정, SHAP 사전계산, /api/contrast 신규, RiskMap 버그 fix, polygon choropleth, requirements 분리, D.0 제출서류 확인 등 반영)
-- [ ] Plan v1을 `-v1` 또는 deprecated 표시
-- [ ] 한태영 plan v2 리뷰 + execution 모드 선택
+**즉시 (위 Q1+Q2 답 받은 후 메인 작업)**:
+- [ ] 위 Q1+Q2 답 따라 task list 정리 + Phase A.0 시작
+- [ ] 한태영의 추가 변경 요청 있으면 plan v2 부분 수정
 
 **그 다음 (구현, 풀스택)**:
 - [ ] Phase A: FastAPI 백엔드 (6 endpoint + SHAP 사전계산 + requirements-api 분리)

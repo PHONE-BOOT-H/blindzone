@@ -60,9 +60,11 @@
 
 1. `CLAUDE.md` (이 파일)
 2. **`docs/CURRENT_STATE.md`** ← 가장 중요 (어디서 이어갈지)
-3. 필요시 `docs/PROJECT_SPEC.md`, `docs/CHANGELOG.md`, `docs/DECISION_LOG.md`
+3. 필요시 `docs/PROJECT_SPEC.md`, `docs/superpowers/plans/2026-05-20-blindzone-fullstack-v2-implementation.md`, `docs/submission/external-review-2026-05-20.md`
 
 → 그래서 한태영이 "ㄱㄱ"만 해도 어디부터 이어갈지 안다.
+
+**중요**: CURRENT_STATE.md 상단의 "🔔 새 세션 시작 시 — 한태영에게 먼저 물어볼 것" 섹션이 있으면 그 미결 결정을 **첫 응답에서 한태영에게 직접 물어볼 것** (BLOCKING). 답 받은 후 그에 따라 진행.
 
 ---
 
