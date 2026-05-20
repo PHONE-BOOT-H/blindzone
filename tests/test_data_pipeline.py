@@ -46,3 +46,19 @@ def test_parse_sido_sgg_handles_empty_and_single_word():
 def test_parse_sido_sgg_handles_double_space():
     # Real data sometimes has double spaces from encoding artifacts
     assert parse_sido_sgg("서울특별시  동작구") == ("서울특별시", "동작구")
+
+
+def test_aggregate_accidents_groups_by_sgg():
+    from src.data_pipeline import aggregate_accidents_by_sgg
+    df = pd.DataFrame({
+        "시군구코드": ["11010", "11010", "11020"],
+        "사고건수": [10, 5, 3],
+        "사망자수": [1, 0, 0],
+        "부상자수": [12, 6, 4],
+    })
+    out = aggregate_accidents_by_sgg(df)
+    assert len(out) == 2
+    row_11010 = out[out["sgg_code"] == "11010"].iloc[0]
+    assert row_11010["accident_count"] == 15
+    assert row_11010["fatality_count"] == 1
+    assert row_11010["fatality_rate"] == 1 / 15

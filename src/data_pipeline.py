@@ -55,3 +55,26 @@ def parse_sido_sgg(text: str) -> tuple[str, str]:
     if len(parts) == 1:
         return (parts[0], "")
     return (parts[0], parts[1].strip())
+
+
+def aggregate_accidents_by_sgg(df: pd.DataFrame) -> pd.DataFrame:
+    """사고 raw 데이터를 시군구별로 집계.
+
+    입력 컬럼 가정: 시군구코드, 사고건수, 사망자수, 부상자수.
+    실제 TAAS 컬럼명이 다르면 호출 전 rename으로 맞춤.
+    """
+    df = df.copy()
+    df["시군구코드"] = df["시군구코드"].apply(normalize_sgg_code)
+    grouped = (
+        df.groupby("시군구코드")
+        .agg(
+            accident_count=("사고건수", "sum"),
+            fatality_count=("사망자수", "sum"),
+            injury_count=("부상자수", "sum"),
+        )
+        .reset_index()
+        .rename(columns={"시군구코드": "sgg_code"})
+    )
+    grouped["fatality_rate"] = grouped["fatality_count"] / grouped["accident_count"]
+    grouped["fatality_rate"] = grouped["fatality_rate"].fillna(0)
+    return grouped
