@@ -129,6 +129,8 @@ def load_sgg_centers(geojson_path) -> gpd.GeoDataFrame:
     )
     if code_col is None:
         raise ValueError(f"시군구코드 컬럼 못 찾음. columns: {list(gdf.columns)}")
+    if name_col is None:
+        raise ValueError(f"시군구명 컬럼 못 찾음. columns: {list(gdf.columns)}")
 
     gdf = gdf.rename(columns={code_col: "sgg_code", name_col: "sgg_name"})
     gdf["sgg_code"] = gdf["sgg_code"].apply(normalize_sgg_code)
