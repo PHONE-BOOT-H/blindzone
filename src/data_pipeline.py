@@ -1,6 +1,8 @@
 """raw 데이터 → 시군구 단위 피처 테이블."""
 from __future__ import annotations
 
+import re
+
 import geopandas as gpd
 import pandas as pd
 
@@ -142,3 +144,200 @@ def load_sgg_centers(geojson_path) -> gpd.GeoDataFrame:
         columns={"centroid": "geometry"}
     )
     return gpd.GeoDataFrame(centers, geometry="geometry", crs=CRS_KOREA)
+
+
+def _strip_trailing_digits(text: str) -> str:
+    """'정읍시1', '세종특별자치시3' 같이 끝에 붙은 숫자를 제거."""
+    return re.sub(r"\d+$", "", str(text).strip()).strip()
+
+
+def _normalize_name(name: str) -> str:
+    """공백 제거 + 소문자 통일로 이름 정규화 (매핑 비교용)."""
+    return re.sub(r"\s+", "", str(name).strip())
+
+
+def _build_taas_sgg_lookup(centers: gpd.GeoDataFrame) -> dict[tuple[str, str], str]:
+    """(sido_prefix, normalized_sgg_name) → sgg_code 룩업 테이블 생성.
+
+    GeoJSON name은 공백 없이 이어 붙인 형태("수원시장안구")이므로,
+    TAAS에서 파싱한 sgg_name("수원시 장안구")도 공백 제거 후 비교한다.
+
+    세종특별자치시는 sgg_name이 없으므로 ("29", "세종시") → 코드 매핑.
+    """
+    lookup: dict[tuple[str, str], str] = {}
+    for _, row in centers.iterrows():
+        prefix = str(row["sgg_code"])[:2]
+        norm = _normalize_name(row["sgg_name"])
+        lookup[(prefix, norm)] = row["sgg_code"]
+    return lookup
+
+
+def _map_taas_to_sgg_code(
+    sido: str,
+    sgg_raw: str,
+    lookup: dict[tuple[str, str], str],
+    sido_prefix_map: dict[str, str],
+) -> str | None:
+    """TAAS 한 행의 (시도명, 시군구 텍스트) → sgg_code.
+
+    1. sido_prefix_map으로 시도 prefix 결정
+    2. sgg_raw 공백 제거 후 lookup 조회
+    3. 실패 시 행정구역 변경 alias 테이블로 재시도
+    4. 실패 시 None 반환
+
+    alias_table: TAAS에 남아있는 구 명칭 → 현재 GeoJSON 명칭 (공백 제거 후 키)
+    (부천시 일반구 폐지, 인천 남구→미추홀구 개칭, 여주·청원 통합 처리)
+    """
+    # 구 지명 → 현재 GeoJSON 지명 (공백 없는 정규화 상태로 비교)
+    _ALIAS: dict[tuple[str, str], str] = {
+        # 부천시 일반구 폐지(2016): 원미구·소사구·오정구 → 부천시
+        ("31", "부천시원미구"): "부천시",
+        ("31", "부천시소사구"): "부천시",
+        ("31", "부천시오정구"): "부천시",
+        # 인천 남구 → 미추홀구 개칭(2018): GeoJSON은 남구 사용
+        ("23", "미추홀구"): "남구",
+        # 여주군 → 여주시 승격(2013)
+        ("31", "여주군"): "여주시",
+        # 충북 청원군 → 청주시 편입(2014): 흥덕구로 통합 처리
+        ("33", "청원군"): "청주시흥덕구",
+    }
+
+    prefix = sido_prefix_map.get(sido)
+    if prefix is None:
+        return None
+    norm = _normalize_name(sgg_raw)
+    if not norm:
+        return None
+
+    code = lookup.get((prefix, norm))
+    if code is not None:
+        return code
+
+    # alias fallback
+    alias_norm = _ALIAS.get((prefix, norm))
+    if alias_norm is not None:
+        return lookup.get((prefix, alias_norm))
+
+    return None
+
+
+def build_grid_features(
+    accidents_csv,
+    ems_csv,
+    sgg_geojson,
+) -> pd.DataFrame:
+    """모든 raw 데이터를 합쳐 시군구 단위 피처 테이블 생성.
+
+    반환: plain DataFrame (geometry 없음).
+    컬럼: sgg_code, sgg_name, area_km2, lon, lat,
+          accident_count, fatality_count, injury_count, fatality_rate,
+          ems_distance_km, ems_response_min, risk_index
+    """
+    from src.config import (
+        SIDO_NAME_TO_PREFIX,
+        RISK_WEIGHT_ACCIDENT_FREQ,
+        RISK_WEIGHT_FATALITY_RATE,
+        RISK_WEIGHT_EMS_DELAY,
+    )
+
+    # --- 1. 시군구 중심·면적 ---
+    centers = load_sgg_centers(sgg_geojson)
+
+    # --- 2. TAAS 사고 raw 로드 ---
+    accidents_raw = pd.read_csv(accidents_csv, encoding="cp949", low_memory=False)
+
+    # TAAS sgg 컬럼의 끝 숫자 제거 후 (시도, 시군구) 분리
+    def _parse_taas_row(text):
+        cleaned = _strip_trailing_digits(str(text))
+        parts = cleaned.split(" ", 1)
+        if len(parts) == 1:
+            # "세종특별자치시" 같이 시도명만 있는 경우
+            # 세종시는 sgg_name이 "세종시" 로 매핑
+            sido = parts[0]
+            sgg = "세종시" if "세종" in sido else ""
+            return sido, sgg
+        return parts[0], parts[1].strip()
+
+    parsed = accidents_raw["사고다발지역시도시군구"].apply(_parse_taas_row)
+    accidents_raw = accidents_raw.copy()
+    accidents_raw["_sido"] = parsed.apply(lambda x: x[0])
+    accidents_raw["_sgg_raw"] = parsed.apply(lambda x: x[1])
+
+    # sgg_code 룩업 테이블
+    lookup = _build_taas_sgg_lookup(centers)
+
+    accidents_raw["sgg_code"] = accidents_raw.apply(
+        lambda r: _map_taas_to_sgg_code(r["_sido"], r["_sgg_raw"], lookup, SIDO_NAME_TO_PREFIX),
+        axis=1,
+    )
+
+    unmatched = accidents_raw["sgg_code"].isnull().sum()
+    total = len(accidents_raw)
+    print(f"  사고 행 매핑 실패: {unmatched} / {total}건 ({unmatched/total*100:.1f}%)")
+    if unmatched / total > 0.5:
+        # 매핑 실패율 50% 초과 시 샘플 출력
+        failed_sample = accidents_raw[accidents_raw["sgg_code"].isnull()]["사고다발지역시도시군구"].unique()[:10]
+        print("  매핑 실패 샘플:", failed_sample)
+
+    accidents_mapped = accidents_raw.dropna(subset=["sgg_code"])
+
+    # 부상자수: 부상신고자수 사용 (TAAS 실제 컬럼)
+    accidents_for_agg = accidents_mapped[["sgg_code", "사고건수", "사망자수", "부상신고자수"]].copy()
+    accidents_for_agg = accidents_for_agg.rename(
+        columns={
+            "sgg_code": "시군구코드",
+            "사고건수": "사고건수",
+            "사망자수": "사망자수",
+            "부상신고자수": "부상자수",
+        }
+    )
+    accidents = aggregate_accidents_by_sgg(accidents_for_agg)
+
+    # --- 3. 응급의료기관 → 시군구별 최근접 거리 ---
+    ems_df = pd.read_csv(ems_csv, encoding="utf-8-sig", low_memory=False)
+    ems_df = ems_df.dropna(subset=["wgs84Lat", "wgs84Lon"])
+    ems = gpd.GeoDataFrame(
+        ems_df,
+        geometry=gpd.points_from_xy(ems_df["wgs84Lon"], ems_df["wgs84Lat"]),
+        crs="EPSG:4326",
+    )
+    ems_dist = nearest_ems_distance_km(centers, ems)
+
+    # --- 4. 응급 도착시간 추정 ---
+    ems_dist = ems_dist.copy()
+    ems_dist["ems_response_min"] = estimate_ems_response_time_min(ems_dist["ems_distance_km"])
+
+    # --- 5. 병합: centers + accidents + ems ---
+    features = centers.merge(accidents, on="sgg_code", how="left").merge(
+        ems_dist[["sgg_code", "ems_distance_km", "ems_response_min"]],
+        on="sgg_code",
+        how="left",
+    )
+
+    # 결측 보정
+    features["accident_count"] = features["accident_count"].fillna(0)
+    features["fatality_count"] = features["fatality_count"].fillna(0)
+    features["injury_count"] = features["injury_count"].fillna(0)
+    features["fatality_rate"] = features["fatality_rate"].fillna(0)
+    features["ems_distance_km"] = features["ems_distance_km"].fillna(features["ems_distance_km"].median())
+    features["ems_response_min"] = features["ems_response_min"].fillna(features["ems_response_min"].median())
+
+    # 위경도 컬럼 추가 (지도 시각화용)
+    features_wgs = features.to_crs("EPSG:4326")
+    features = features.copy()
+    features["lon"] = features_wgs.geometry.x
+    features["lat"] = features_wgs.geometry.y
+
+    # --- 6. 위험 지수 계산 (min-max 정규화 후 가중합) ---
+    def _minmax(s: pd.Series) -> pd.Series:
+        mn, mx = s.min(), s.max()
+        return (s - mn) / (mx - mn + 1e-9)
+
+    features["risk_index"] = (
+        RISK_WEIGHT_ACCIDENT_FREQ * _minmax(features["accident_count"])
+        + RISK_WEIGHT_FATALITY_RATE * _minmax(features["fatality_rate"])
+        + RISK_WEIGHT_EMS_DELAY * _minmax(features["ems_response_min"] + features["ems_distance_km"])
+    )
+
+    # geometry 컬럼 제거 후 plain DataFrame 반환
+    return pd.DataFrame(features.drop(columns=["geometry"]))
