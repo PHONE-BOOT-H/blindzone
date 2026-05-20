@@ -172,6 +172,19 @@ def _build_taas_sgg_lookup(centers: gpd.GeoDataFrame) -> dict[tuple[str, str], s
     return lookup
 
 
+# TAAS에 남아있는 구 명칭 → 현재 GeoJSON 명칭 (공백 없는 정규화 상태로 비교)
+# 부천시 일반구 폐지(2016), 인천 남구→미추홀구 개칭(2018), 여주군→여주시 승격(2013),
+# 충북 청원군→청주시 편입(2014)
+_TAAS_NAME_ALIAS: dict[tuple[str, str], str] = {
+    ("31", "부천시원미구"): "부천시",
+    ("31", "부천시소사구"): "부천시",
+    ("31", "부천시오정구"): "부천시",
+    ("23", "미추홀구"): "남구",
+    ("31", "여주군"): "여주시",
+    ("33", "청원군"): "청주시흥덕구",
+}
+
+
 def _map_taas_to_sgg_code(
     sido: str,
     sgg_raw: str,
@@ -182,26 +195,9 @@ def _map_taas_to_sgg_code(
 
     1. sido_prefix_map으로 시도 prefix 결정
     2. sgg_raw 공백 제거 후 lookup 조회
-    3. 실패 시 행정구역 변경 alias 테이블로 재시도
+    3. 실패 시 _TAAS_NAME_ALIAS 테이블로 재시도 (행정구역 변경 대응)
     4. 실패 시 None 반환
-
-    alias_table: TAAS에 남아있는 구 명칭 → 현재 GeoJSON 명칭 (공백 제거 후 키)
-    (부천시 일반구 폐지, 인천 남구→미추홀구 개칭, 여주·청원 통합 처리)
     """
-    # 구 지명 → 현재 GeoJSON 지명 (공백 없는 정규화 상태로 비교)
-    _ALIAS: dict[tuple[str, str], str] = {
-        # 부천시 일반구 폐지(2016): 원미구·소사구·오정구 → 부천시
-        ("31", "부천시원미구"): "부천시",
-        ("31", "부천시소사구"): "부천시",
-        ("31", "부천시오정구"): "부천시",
-        # 인천 남구 → 미추홀구 개칭(2018): GeoJSON은 남구 사용
-        ("23", "미추홀구"): "남구",
-        # 여주군 → 여주시 승격(2013)
-        ("31", "여주군"): "여주시",
-        # 충북 청원군 → 청주시 편입(2014): 흥덕구로 통합 처리
-        ("33", "청원군"): "청주시흥덕구",
-    }
-
     prefix = sido_prefix_map.get(sido)
     if prefix is None:
         return None
@@ -213,8 +209,7 @@ def _map_taas_to_sgg_code(
     if code is not None:
         return code
 
-    # alias fallback
-    alias_norm = _ALIAS.get((prefix, norm))
+    alias_norm = _TAAS_NAME_ALIAS.get((prefix, norm))
     if alias_norm is not None:
         return lookup.get((prefix, alias_norm))
 
