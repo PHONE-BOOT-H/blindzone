@@ -1,7 +1,9 @@
 import streamlit as st
 import pandas as pd
+from streamlit_folium import st_folium
 
 from src.shap_explain import explain_one
+from src.viz import build_risk_map
 
 
 def render(features: pd.DataFrame):
@@ -37,4 +39,5 @@ def render(features: pd.DataFrame):
 
     with right:
         st.subheader("전국 위험지도")
-        st.write("(지도는 다음 단계에서 추가)")
+        m = build_risk_map(features, selected_sgg=sgg_name)
+        st_folium(m, width=None, height=600, returned_objects=[])
