@@ -6,7 +6,7 @@ Thumbs.db
 desktop.ini
 
 # ============================
-# 에디터 (개인 설정, 팀 공유 X)
+# 에디터
 # ============================
 .vscode/
 .idea/
@@ -26,7 +26,7 @@ credentials.json
 service-account*.json
 
 # ============================
-# Python (Gemini SDK, 데이터 분석 등)
+# Python
 # ============================
 __pycache__/
 *.py[cod]
@@ -40,34 +40,29 @@ env/
 htmlcov/
 
 # ============================
-# Node.js (TypeScript/JavaScript)
+# Node.js / Next.js
 # ============================
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 .pnp.*
+.next/
+out/
 
 # ============================
 # 빌드 결과물 / 캐시
 # ============================
 dist/
 build/
-out/
-.next/
-.nuxt/
 *.tsbuildinfo
 .cache/
 .parcel-cache/
+.nuxt/
 
 # ============================
 # Brainstorming visual companion
 # ============================
 .superpowers/
-
-# ============================
-# 학습된 모델 (재현 가능, 바이너리)
-# ============================
-models/*.pkl
 
 # ============================
 # 로그
@@ -76,22 +71,26 @@ models/*.pkl
 logs/
 
 # ============================
-# 캡스톤 프로젝트 특화
+# 데이터 (원본 큰 파일 — 어느 위치든 무시)
 # ============================
-# 원본 데이터 (NVIDIA Personas 등 큰 파일, git에 부적합)
-data/raw/
-data/external/
-data/*.csv
-data/*.json
-!data/sample/
+**/data/raw/
+**/data/external/
+**/data/*.csv
+**/data/*.json
+!**/data/sample/
 
-# 현장조사 미디어 (사진, 영상 원본)
-media/raw/
-media/full/
+# 학습 모델: 배포 편의를 위해 git에 포함 (룰 제거)
+# 매우 큰 모델은 별도 처리
 
+# ============================
+# 현장조사 미디어
+# ============================
+**/media/raw/
+**/media/full/
+
+# ============================
 # 개인 메모/스크래치
+# ============================
 notes/personal/
 scratch/
-
-# Notion 백업 export
 notion-exports/

@@ -1,6 +1,4 @@
-streamlit>=1.32.0
-streamlit-folium>=0.18.0
-folium>=0.16.0
+# 데이터·지리·모델
 pandas>=2.2.0
 geopandas>=0.14.0
 pyproj>=3.6.0
@@ -9,9 +7,17 @@ numpy>=1.26.0
 scikit-learn>=1.4.0
 xgboost>=2.0.0
 shap>=0.44.0
-plotly>=5.19.0
 pyarrow>=15.0.0
+
+# API (FastAPI)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.6.0
+
+# 외부 호출 + 환경
 requests>=2.31.0
 python-dotenv>=1.0.0
-pytest>=8.0.0
 openpyxl>=3.1.0
+
+# Test
+pytest>=8.0.0
