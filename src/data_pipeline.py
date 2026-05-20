@@ -71,6 +71,20 @@ def nearest_ems_distance_km(
     return joined[["sgg_code", "geometry", "ems_distance_km"]].drop_duplicates(subset=["sgg_code"])
 
 
+def estimate_ems_response_time_min(
+    distance_km: float | pd.Series,
+    avg_speed_kmh: float = 60.0,
+) -> float | pd.Series:
+    """응급기관까지 거리 + 평균 속도로 예상 도착 시간(분) 추정.
+
+    실제 119 raw 데이터에 출동시간 컬럼이 없어서 거리 기반 추정으로 대체.
+    도시 평균 속도 60 km/h 가정 (도로 효율 보정 포함).
+
+    scalar 또는 pandas Series 둘 다 처리.
+    """
+    return (distance_km / avg_speed_kmh) * 60.0
+
+
 def aggregate_accidents_by_sgg(df: pd.DataFrame) -> pd.DataFrame:
     """사고 raw 데이터를 시군구별로 집계.
 

@@ -79,3 +79,22 @@ def test_nearest_ems_distance_returns_km():
     out = nearest_ems_distance_km(sgg_centers, ems)
     assert "ems_distance_km" in out.columns
     assert abs(out["ems_distance_km"].iloc[0] - 10.0) < 0.01
+
+
+def test_estimate_ems_response_time_min_scalar():
+    from src.data_pipeline import estimate_ems_response_time_min
+    # 60km/h 가정 시 10km는 10분
+    assert abs(estimate_ems_response_time_min(10.0) - 10.0) < 0.01
+    # 평균 속도를 30km/h로 바꾸면 10km는 20분
+    assert abs(estimate_ems_response_time_min(10.0, avg_speed_kmh=30.0) - 20.0) < 0.01
+    # 0km는 0분
+    assert estimate_ems_response_time_min(0.0) == 0.0
+
+
+def test_estimate_ems_response_time_min_series():
+    import numpy as np
+    from src.data_pipeline import estimate_ems_response_time_min
+    s = pd.Series([6.0, 12.0, 30.0])
+    out = estimate_ems_response_time_min(s)
+    expected = pd.Series([6.0, 12.0, 30.0])  # @60km/h: 6→6min, 12→12min, 30→30min
+    assert np.allclose(out.values, expected.values, atol=0.01)
