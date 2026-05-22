@@ -132,3 +132,38 @@ def simulate(req: schemas.SimulateRequest):
         improved_count=improved_count,
         items=items,
     )
+
+
+@router.get("/contrast", response_model=schemas.ContrastResponse)
+def contrast():
+    df = get_features().copy()
+    # 사고건수 순위 (1위 = 가장 사고 많음)
+    df["accident_rank"] = df["accident_count"].rank(method="min", ascending=False).astype(int)
+    df["risk_rank"] = df["risk_index"].rank(method="min", ascending=False).astype(int)
+    df["rank_diff"] = df["accident_rank"] - df["risk_rank"]
+
+    blindzone_top10 = set(df.nlargest(10, "risk_index")["sgg_code"])
+    accident_top10 = set(df.nlargest(10, "accident_count")["sgg_code"])
+
+    bz_only = blindzone_top10 - accident_top10
+    acc_only = accident_top10 - blindzone_top10
+
+    items_df = df[df["sgg_code"].isin(blindzone_top10 | accident_top10)].copy()
+    items_df = items_df.sort_values("rank_diff", ascending=False)
+
+    items = [
+        schemas.ContrastItem(
+            sgg_code=r["sgg_code"],
+            sgg_name=r["sgg_name"],
+            accident_count=int(r["accident_count"]),
+            accident_rank=int(r["accident_rank"]),
+            risk_rank=int(r["risk_rank"]),
+            rank_diff=int(r["rank_diff"]),
+        )
+        for _, r in items_df.iterrows()
+    ]
+    return schemas.ContrastResponse(
+        blindzone_top10_not_in_accident_top10=len(bz_only),
+        accident_top10_not_in_blindzone_top10=len(acc_only),
+        items=items,
+    )
