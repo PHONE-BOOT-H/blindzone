@@ -1,0 +1,11 @@
+# 배포 런타임 최소 (Railway용)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.6.0
+pandas>=2.2.0
+pyarrow>=15.0.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+xgboost>=2.0.0
+python-dotenv>=1.0.0
+# 주의: geopandas, shap, openpyxl, requests는 학습/사전계산용. 배포 런타임 X

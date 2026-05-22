@@ -11,6 +11,7 @@ CRS_WGS84 = "EPSG:4326"
 
 GRID_FEATURES_PATH = DATA_PROCESSED / "grid_features.parquet"
 MODEL_PATH = MODELS / "xgb_risk_model.pkl"
+FEATURE_DETAILS_PATH = DATA_PROCESSED / "feature_details.parquet"
 
 # 위험 지수 계산 가중치 (EDA 후 조정 가능)
 RISK_WEIGHT_ACCIDENT_FREQ = 0.4
