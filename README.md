@@ -74,6 +74,15 @@ npm run dev   # http://localhost:3000
 3. XGBoost 회귀로 정의된 위험 지수를 재학습 → **SHAP 값으로 시군구별 상위 기여 요인 추출** (사고 예측이 아닌 surrogate 설명)
 4. 가상 응급의료 거점 추가 시뮬레이션 — 거리 피처 재계산 + 동일 모델 inference → 위험 지수 변화 (정책 효과 예측이 아니라 거리 기반 접근성 민감도 분석)
 
+## 선행 연구와의 관계
+
+한국 데이터로 사고·응급의료를 결합한 선행 연구가 존재한다. 본 프로젝트는 이를 인지하고, 분석 단위·방법론·산출 형태를 확장한다.
+
+- **Jung & Qin (2024, MDPI Sustainability)** — 한국 EMS 인프라 + 사고 데이터 융합, 16-20분 응급 대응시간 구간이 사망률 유의 증가와 연결. EMS 입지 우선순위 제안. **BlindZone과 차이**: GWLR 사용(XGBoost X), What-if 시뮬레이션 없음, 충청권 중심 점단위 분석.
+- **Jung & Qin (2025, Sage TRR)** — 한국 데이터 + XGBoost + SHAP으로 사고 심각도 영향 요인 식별. **BlindZone과 차이**: 분석 단위가 개별 사고건이지 시군구 행정단위가 아님, "사각지대 발굴"이나 가상 거점 시뮬레이션 없음, 학술 분석.
+
+본 프로젝트의 차별점은 **(a) 시군구 252개 전국 단위 + (b) TAAS·응급의료기관·119 구급통계·행정경계 4종 동시 융합 + (c) 인터랙티브 What-if 시뮬레이션 + (d) 풀스택 웹서비스**의 결합이다. 자세한 선행 조사 결과는 [docs/submission/prior-art.md](docs/submission/prior-art.md).
+
 ## 한계 및 정직 고지
 
 - 본 모델은 실제 사고·사망을 예측하지 않는다. 정의된 위험지수에 대한 surrogate model이며, R²는 사고 예측 성능이 아니라 정의식 재현도다.
@@ -81,6 +90,7 @@ npm run dev   # http://localhost:3000
 - 119 출동 사건별 raw 비공개 → 응급 도착시간은 응급기관 거리 + 평균 속도(60km/h) 가정 추정.
 - 시군구 단위 평균 — 격자 내 변동성 평준화 (V1.1에서 1km 격자 검토).
 - 가중치 0.4 / 0.3 / 0.3은 실증 근거 없이 선택한 임의 설정. 다른 가중치 조합 시 결과 달라질 수 있음.
+- 응급 접근성을 **직선거리**로 계산 (도로망·실제 응급차 평균 속도 미반영). 수요측 변수(인구밀도·고령자 비율 등) 미포함.
 
 ## 가점 신청 항목 (부여 여부는 심사위원단 판단)
 
@@ -95,3 +105,5 @@ npm run dev   # http://localhost:3000
 - [docs/submission/data_manifest.md](docs/submission/data_manifest.md) — 데이터 매니페스트
 - [docs/submission/external-review-2026-05-20.md](docs/submission/external-review-2026-05-20.md) — 외부 평가 1차
 - [docs/submission/case-study.md](docs/submission/case-study.md) — 대표 사례 (인제군)
+- [docs/submission/prior-art.md](docs/submission/prior-art.md) — 선행 연구 인지 + 차별점 정리
+- [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md) — AI 도구 활용 증빙
