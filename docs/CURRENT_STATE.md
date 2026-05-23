@@ -5,141 +5,137 @@
 ---
 
 ## 마지막 업데이트
-2026-05-23 — Phase A 백엔드 완전 종료 + Phase B Next.js 셋업 완료. **T8 (RiskMap) 다음 세션 시작점**.
+
+2026-05-23 — **Phase B/C/D 본체 완료**. 코드·문서 작업 끝. 남은 건 외부 AI 최종 검증 + T16 한태영 액션 (통계누리 zip → HWP → 영상 → 제출).
 
 ---
 
 ## 어디까지 왔는지
 
-### Phase 1~4 (셋업·데이터·가공·모델) ✅ (이전 세션)
+### Phase 1~4 (데이터·모델 셋업) ✅
+기존 grid_features.parquet + xgb_risk_model.pkl + SHAP 모듈 + What-if inference 모듈 모두 있음.
 
-생략. 기존 grid_features.parquet + xgb_risk_model.pkl + SHAP 모듈 + What-if inference 모듈 모두 있음.
-
-### Phase 0 (시군구 GeoJSON 갱신) ✅ (이전 세션, commit `0380b82`)
-
+### Phase 0 (시군구 GeoJSON 갱신) ✅ `0380b82`
 통계청 (센서스경계) VWORLD SHP. 252 시군구. CC BY-NC-ND.
 
-### Phase A (FastAPI 백엔드) ✅ (오늘 완료)
+### Phase A (FastAPI 백엔드) ✅ 
+6 endpoint + 8 통합 테스트. 자세히는 이전 commit 이력.
+
+### Phase B (Next.js 프론트엔드) ✅
 
 | Task | Commit | 내용 |
 |---|---|---|
-| T1 (A.0) | `07cbad9` | SHAP 사전 계산 → `backend/data/processed/feature_details.parquet` (252 rows × 13 cols, `shap_top_json` 컬럼) |
-| T2 (A.1~A.4) | `a28111f` | FastAPI 셋업. `backend/requirements-api.txt` 분리 (geopandas/shap 제외) + `backend/api/{__init__,main,routes,schemas,deps}.py` + `backend/src/config.py`에 `FEATURE_DETAILS_PATH` 승격 (외부 평가 9번) |
-| T3 (A.5~A.8) | `2d57d66` | 4 GET endpoints (`/api/health`, `/api/features`, `/api/features/{sgg_code}`, `/api/top10`) |
-| T4 (A.9) | `fda430b` | `POST /api/simulate` (haversine + xgboost 재추론, geopandas 의존 X). 인제군 sanity 통과 (24.2→8.17 km, risk_delta -0.230) |
-| T5 (A.10) | `d3d534d` | `GET /api/contrast` (외부 평가 7번 핵심). 사고건수 순위 vs BlindZone 순위 비교 |
-| T6 (A.11~A.12) | `fb636b6` | `backend/tests/test_api.py` 8개 통합 테스트. 전체 suite 20 PASS (8 신규 + 11 data pipeline + 1 train). httpx는 dev-only로 .venv 직접 설치, requirements-api.txt에는 미포함 |
+| T7 셋업 | `0d21ec7` | Next.js 14 + TS + Tailwind + maplibre/deck.gl, types/api/Nav/layout |
+| T8 RiskMap | `7901b81` | deck.gl ScatterplotLayer + maplibre basemap (외부평가 5번 shadowing fix) |
+| T9 4 컴포넌트 | `688e7aa` | MetricCard·ShapExplanation·Top10Table·ContrastPanel |
+| T10 3 페이지 | `0f36492` | 시민 모드·정책 시뮬레이터·About + 정직성 정정 + 인제·옹진 narrative |
+| T11 build 검증 | T10에서 같이 | tsc + lint + next build 7/7 prerender 성공 |
 
-### Phase B (Next.js 프론트엔드) — 진행 중
+### Phase C (배포 prerequisite) ✅
 
 | Task | Commit | 내용 |
 |---|---|---|
-| T7 (B.1~B.4) | `0d21ec7` | Next.js 14 셋업 (create-next-app + maplibre-gl/react-map-gl/deck.gl). `frontend/lib/types.ts`, `frontend/lib/api.ts` (6 endpoint 매핑), `frontend/components/Nav.tsx`, `frontend/app/layout.tsx` (한국어·BlindZone 메타). `.env.local` (gitignored), `.env.local.example`. `tsc --noEmit` 통과 |
-| T8 (B.5) | — | **다음 세션 시작점.** `frontend/components/RiskMap.tsx` 작성. 외부 평가 5번 핵심: `import Map` → `import MapLibreMap` rename + `new globalThis.Map()` (shadowing 버그 fix). dispatch 두 번 실패 (87분 stuck + 529 overloaded) → 아직 시작 안 함 |
-| T9 (B.6) | — | MetricCard + ShapExplanation + Top10Table + ContrastPanel 4 컴포넌트 |
-| T10 (B.7~B.9) | — | 3 페이지 (시민/정책/About — About에 정직성 8개 정정 적용) |
-| T11 (B.10~B.12) | — | `tsc --noEmit` + `npm run build` 최종 검증 + Phase B commit |
+| T12 | `422260d` | backend/Procfile + railway.json (NIXPACKS + requirements-api.txt + healthcheck /api/health) |
 
-### Phase C (배포) — pending
+CORS는 main.py에 `https://*.vercel.app` regex 이미 허용. **실제 Railway/Vercel 배포는 한태영 액션**.
 
-| Task | 내용 |
-|---|---|
-| T12 (C.1~C.3) | `backend/Procfile` + `backend/railway.json` (requirements-api.txt build) + Vercel 설정. 실제 배포는 한태영 액션 |
+### Phase D (정정·증빙) ✅
 
-### Phase D (정정·증빙·제출) — pending
+| Task | Commit | 내용 |
+|---|---|---|
+| T13 README | `d161ed5` | 위험표현 8개 정정 + 인제·옹진 narrative + Next.js/FastAPI 스택 갱신 |
+| T15 case-study | `92368dd` | 인제군 (사고 1건/위험 2위, EMS 24.2km, SHAP top1=거리, 시뮬레이션 -58%) |
+| T14 ai-tool-evidence | `305b689` | 가점 3건 증빙 (Claude Code 활용 영역 + 한태영 판단 영역 + XGBoost/SHAP + 4종 융합) |
+| Prior-art | `aca8af2` | 선행 연구 조사 (Jung & Qin 시리즈) + README/case-study 인용 |
 
-| Task | 내용 |
-|---|---|
-| T13 (D.1) | README 정정 — 8개 위험표현 적용 |
-| T14 (D.2) | `docs/submission/ai-tool-evidence.md` |
-| T15 (D.3) | `docs/submission/case-study.md` — 대표 사례 1개 (인제군 또는 옹진군 추천) |
-| T16 (D.0/D.4/D.5/D.6) | 한태영 액션: 통계누리 hNum=283 zip 다운로드 → 참가신청서·서약서·기획서 HWP → 데모 영상 → 제출 |
+### 외부 AI 평가 (2차) — 패키지 작성됨, 한태영 액션 대기
+
+`docs/submission/external-review-request-2026-05-23.md` — 한태영이 ChatGPT/Claude/Gemini 중 1~2곳에 보내서 최종 검증. 평가 항목 5개 (독창성·방법론·정직성·발표 strategy·입상 가능성).
+
+### Phase D' — 외부 AI 평가 반영 (한태영 결과 받은 후)
+
+평가 결과에 따라 README·발표자료·기획서에 추가 정정 또는 보강.
+
+### T16 (한태영 액션 — 최종 제출 준비)
+
+- [ ] 통계누리 hNum=283 zip 다운로드 → 참가신청서·서약서·기획서 HWP 확보
+- [ ] 기획서 3장 작성 (BlindZone narrative 기반)
+- [ ] 데모 영상 녹화 (시민 모드 → 시군구 클릭 → SHAP → 정책 시뮬레이터 → About 발견 섹션)
+- [ ] 2026-05-29 마감 전 접수
 
 ---
 
-## ⚠️ 중요한 발견 (오늘) — narrative 정정 필요
+## 핵심 narrative (발표·기획서용)
 
-**`/api/top10`와 `/api/contrast`의 실제 결과가 stale 문서와 어긋남.** 이전 문서의 "blind zone 10개 시군구 (이천·제천·증평·정읍·김천·구미·영천·창원의창/마산합포·서귀포)" 명단은 **현재 모델 출력과 zero overlap**. 
+### 한 줄
+**사고 빈도 지도가 놓치는 응급 사각지대를, 시군구 단위 4종 데이터 융합으로 발굴한다.**
 
-**실제 `/api/top10`** (현재 feature_details.parquet 기준, 위험지수 내림차순):
+### 대표 사례 — 인제군 (T15 case-study)
+- TAAS 다발지점 사고 1건 (전국 245위) → BlindZone 위험지수 2위 (0.396)
+- 응급의료기관까지 직선거리 24.2km, 도착 추정 24분
+- SHAP top1: 응급기관까지 거리 (+0.173)
+- 가상 EMS 1곳 추가 시뮬레이션: 거리 24.2 → 8.23km, 위험지수 0.396 → 0.166 (-58%)
 
-1. 송파구 (11240) — 0.4078
-2. 인제군 (32590) — 0.3963
-3. 동대문구 (11060) — 0.3580
-4. 옹진군 (23520) — 0.3000
-5. 영등포구 (11190) — 0.2996
-6. 달서구 (22070) — 0.2913
-7. 북구 (22050) — 0.2901
-8. 중랑구 (11070) — 0.2525
-9. 강동구 (11250) — 0.1872
-10. 수성구 (22060) — 0.1826
+### 보조 사례 — 옹진군
+- TAAS 다발지점 사고 0건 (전국 246위) → BlindZone 위험지수 4위 (도서 지역 응급 접근성)
 
-**실제 `/api/contrast`** (사고 TOP10 vs BlindZone TOP10 비교):
+### 차별점 5개 (prior-art 기반)
+1. 시군구 252개 전국 단위 (선행은 점단위/고속도로/광역시)
+2. 4종 데이터 동시 융합 (TAAS+응급의료+119+행정경계)
+3. 가중합 + XGBoost surrogate + SHAP 파이프라인
+4. What-if 인터랙티브 시뮬레이션
+5. 풀스택 웹서비스 (선행은 학술)
 
-- `blindzone_top10_not_in_accident_top10`: **3** (인제·옹진·수성)
-- `accident_top10_not_in_blindzone_top10`: **3** (강북·은평·구로)
-- 핵심 outlier:
-  - **인제군**: accident_rank=245, risk_rank=2, **rank_diff=+243**, accident_count=1
-  - **옹진군**: accident_rank=246, risk_rank=4, **rank_diff=+242**, accident_count=0
-  - 수성구: rank_diff=+3 (약함)
-
-**해석**: "통계 사각지대 3곳" 자체는 약한 숫자지만, **인제·옹진 두 사례가 극단적 outlier** — 사고 0~1건인데 BlindZone TOP4 진입. 이게 가장 강한 narrative. 수성구는 묶지 말고 두 사례에 집중하는 게 발표 임팩트 큼.
-
-**정정 대상 (T13 README, T15 case-study, About 페이지 = T10)**:
-- "blind zone 10개 시군구 (이천·제천…)" → 갱신된 실제 TOP10
-- "blindzone TOP10 중 N곳" → "3곳"
-- 대표 사례 1개 = **인제군** (사고 1건 → BlindZone rank 2, EMS 거리 24.2km) 강력 추천
-- 모델 가중치 (사고 0.4 / 사망률 0.3 / EMS 0.3)는 도시 편향 — 약점이긴 한데 정직히 인정 (가중치 0.4/0.3/0.3은 임의 선택이라는 표현 이미 PROJECT_SPEC에 있음)
+### 선행 인지 (포지셔닝)
+- Jung & Qin (2024 MDPI, 2025 TRR) — 가장 가까운 선행. EMS+사고 융합, XGBoost+SHAP. **분석 단위·도구·산출 형태가 BlindZone과 다름**. 발표 시 명시 인용 권장.
 
 ---
 
 ## 🔔 새 세션 시작 시 — 한태영에게 먼저 물어볼 것
 
-**없음.** Plan v2 OK + Subagent-driven 모드 a) 이미 확정. T8부터 그대로 이어서 dispatch하면 됨. 
+다음 중 어디 단계인가:
 
-다만 진행 중 어느 시점에든 "narrative 정정은 어디 task에서 묶을지" 결정 필요 (T10 About 작성하면서 같이? 또는 T13 README와 함께?). 메인이 그때그때 자연스럽게 끼워 넣어도 OK.
+- **(a) 외부 AI 평가 결과 받음** → 결과를 README·기획서·발표자료에 어떻게 반영할지 결정
+- **(b) T16 한태영 액션 단계 — 통계누리 zip / HWP / 영상** → 어디 막혔나, 무엇 도와줄지
+- **(c) 새 의문 또는 정정** → 자유 텍스트로
 
 ---
 
 ## 다음 할 일
 
-**즉시 (다음 세션 첫 작업)**:
-- [ ] T8: `frontend/components/RiskMap.tsx` 작성. plan v2 Task B.5 (line 959~1094) 그대로. 핵심: `import MapLibreMap from "react-map-gl/maplibre"` + `new globalThis.Map(...)`. 외부 평가 5번 권장사항.
-- [ ] T8 끝나면 spec + code quality review → T9 (4 컴포넌트, ContrastPanel 포함)
+**한태영 액션 대기**:
+- [ ] 외부 AI 평가 (패키지: `docs/submission/external-review-request-2026-05-23.md`) 1~2곳에 보내기
+- [ ] Railway 가입 + 백엔드 배포 (Root Directory: `backend/`, NIXPACKS 자동)
+- [ ] Vercel 가입 + 프론트 배포 (Root Directory: `frontend/`, NEXT_PUBLIC_API_BASE_URL = Railway URL)
+- [ ] 통계누리 hNum=283 zip 다운로드 → HWP 확보
+- [ ] 기획서 3장 작성, 데모 영상 녹화
+- [ ] 2026-05-29 접수
 
-**그 다음**: T9 → T10 → T11 → T12 → T13/T14/T15 → T16 (한태영 액션)
-
-**한태영 액션 대기 (Phase C/D 일부)**:
-- [ ] Railway 가입 + 배포 (T12 후)
-- [ ] Vercel 가입 + 배포 (T12 후)
-- [ ] 통계누리 hNum=283 zip 다운로드 → 참가신청서·서약서·기획서 HWP 확보 (T16)
-- [ ] 기획서 3장 작성, 데모 영상 녹화 (T16)
+**Claude 도울 수 있는 것 (한태영 요청 시)**:
+- 외부 AI 평가 결과 정리·반영
+- HWP 본문 텍스트 초안 (한태영이 HWP에 붙여넣기)
+- 데모 영상 시나리오 텍스트
+- 배포 후 CORS·환경변수 갱신
+- 발표 슬라이드 outline
 
 ---
 
 ## 보조 산출물
 
-- `C:\Users\한태영\Desktop\BlindZone_프로젝트_개요.html` (28 KB, 12 섹션) — 비전공자용 단일 HTML 브리핑. 정직성 8개 표 포함. 가족·친구·심사위원에게 보여주기용. 한태영 직접 더블클릭으로 열기
+- `C:\Users\한태영\Desktop\BlindZone_프로젝트_개요.html` (28 KB, 12 섹션) — 비전공자용 단일 HTML 브리핑. 한태영 직접 더블클릭으로 열기
 
 ---
 
-## 막힌 곳 / 미해결 질문
+## 최근 결정 (이번 세션)
 
-- T7 implementer subagent가 87분 stuck 후 API 500으로 죽음 (npm install + maplibre/deck.gl 단계). 메인이 직접 인수받아 마무리. **T8 subagent 530 overloaded로 시작도 못 함 (2026-05-23)** — 서버 측 일시 이슈. 다시 dispatch하면 됨.
-- 향후 npm install 같은 IO 무거운 작업은 메인이 직접 background로 돌리고 그동안 파일 작성을 병행하는 패턴이 더 안정적.
-
----
-
-## 최근 결정
-
-- 2026-05-22: a) 옵션 선택 — narrative 정정은 T5 결과 본 후 통합 (지금 받음, 위 발견 사항 참조)
-- 2026-05-22: deps.py의 `FEATURE_DETAILS_PATH`를 `backend/src/config.py`로 승격 (code reviewer 권장)
-- 2026-05-22: 백엔드 6 endpoint 각각 개별 commit (plan v2의 A.12 한방 commit 의도와 deviate). 결과적으로 git 이력이 더 읽기 좋음
-- 2026-05-22: pytest TestClient 의존 `httpx`는 dev-only → `.venv`에 직접 설치, `requirements-api.txt`에는 미포함 (Railway 런타임 최소화)
+- 2026-05-23: T8 메인 직접 작성 (subagent 두 번 실패 회피). 이후 T9·T10·T13·T14·T15·T12·prior-art 모두 메인 직접 + tsc/build 즉시 검증 패턴이 안정적이라 그대로 유지
+- 2026-05-23: 정직성 정정 — page.tsx의 "사고는 적은데 죽음은 많은" → "사고 건수만으로는 드러나지 않는 응급 사각지대", MetricCard 라벨 "연간 사고 건수" → "사고 건수 (TAAS 다발지점)", "평균 응급 도착시간" → "응급 도착시간 (추정)"
+- 2026-05-23: prior-art researcher subagent 1회 실행. Jung & Qin 시리즈 (2024 MDPI, 2025 TRR, 2020 ASCE)가 가장 가까운 선행으로 발견됨 → README·case-study에 짧은 인용 + prior-art.md 별도 정리. 발표·기획서에 "선행 인지 + 확장" 프레임 권장
 
 ---
 
 ## Skill 모드 메모
 
-- Subagent-driven-development 모드 사용 중. 각 task: implementer dispatch → spec review subagent → code quality review subagent → complete.
-- 단순 셋업·파일 작성은 메인 직접 처리하는 게 더 빠르고 안정적임 (T7 후반부 사례). 무거운 task (RiskMap, 페이지 3개)는 subagent dispatch 유지.
+- 이번 세션은 메인 직접 + 즉시 tsc/build 검증 패턴 사용. subagent는 prior-art researcher 1회만 사용 (선행 조사 — 외부 조사라 적합)
+- 무거운 컴포넌트·페이지 작성도 메인 직접이 더 안정적임 (T7 후반부 + T8~T10 사례)
+- 다음 세션도 동일 패턴 권장
