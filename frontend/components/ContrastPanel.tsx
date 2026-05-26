@@ -46,7 +46,7 @@ export default function ContrastPanel() {
         </table>
       </div>
       <p className="text-xs text-gray-500">
-        해석: 순위 차이가 큰 양수는 사고는 적은데 BlindZone에서 높은 위험으로 발굴된 곳 (응급 접근성 등 결합 효과).
+        해석: 순위는 기준 가중치(0.4/0.3/0.3) 기준이다. 순위 차이가 큰 양수는 사고는 적은데 BlindZone에서 높은 위험으로 발굴된 곳 (응급 접근성 등 결합 효과). 가중치 민감도 검증은 About 참고.
       </p>
     </div>
   );

@@ -35,7 +35,7 @@ risk_index = 0.4 × minmax(accident_count)
            + 0.3 × minmax(ems_response_min + ems_distance_km)
 ```
 
-각 항목은 min-max 정규화 후 가중합. 가중치는 임의 설정값(EDA에서 조정 가능), **실제 사고·사망을 직접 학습한 모델이 아닌 정의식**. 자세한 모델 한계는 `model_card.md` 참고.
+각 항목은 min-max 정규화 후 가중합. 가중치 0.4/0.3/0.3은 실증 근거 없는 선택이며, **실제 사고·사망을 직접 학습한 모델이 아닌 정의식**이다. 가중치 임의성은 126개 시나리오 + 사망률 소표본 보정으로 순위 강건성을 검증했다(`weight-sensitivity.md`). 자세한 모델 한계는 `model_card.md` 참고.
 
 ## 좌표계 통일
 

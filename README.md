@@ -12,12 +12,13 @@
 
 ## 발견 — 사고 빈도만으로 안 보이는 사각지대
 
-본 데이터로 산출한 위험지수 TOP10 중 **3곳(인제·옹진·수성)** 은 TAAS 사고다발지역 데이터의 사고건수 TOP10에 포함되지 않는다. 특히:
+기준 가중치(0.4/0.3/0.3) 위험지수 TOP10 중 인제·옹진·수성 등은 TAAS 사고건수 TOP10에 없다. 나아가 단일 가중치에 기대지 않으려 **126개 가중치 시나리오 + 사망률 소표본 보정**으로 순위 강건성을 검증했다(→ [docs/submission/weight-sensitivity.md](docs/submission/weight-sensitivity.md)). 그 결과 사고건수가 전국 하위인데도 대부분의 가중치에서 상위에 남는 곳은 **인제군·옹진군 두 곳**이다(robust blind zone).
 
-- **인제군**: TAAS 다발지점 사고 1건(전국 245위)인데 위험지수 2위 — 가장 가까운 응급의료기관까지 직선거리 24.2km, 도착 추정시간 24분
-- **옹진군**: TAAS 다발지점 사고 0건(전국 246위)인데 위험지수 4위 — 도서 지역의 응급 접근성 한계 누적
+- **옹진군**: 사고 0건·사망 0건인데 응급거리 75.3km(전국 최대)로 위험지수 4위. 사망률에 의존하지 않아 가중치·사망률 보정 양쪽에 강건한, 가장 안정적인 사각지대.
+- **인제군**: 사고 1건(전국 245위)인데 기준 가중치 2위. 단 이 2위는 사망률 1.0(사고 1건의 산물)에 의존해 소표본 보정 시 15위권으로 내려간다 — 숨기지 않고, 거리 24.2km라는 구조적 요인과 분리해 해석한다.
+- 수성구처럼 기준 가중치에서만 상위인 곳은 가중치를 바꾸면 빠지므로 robust로 보지 않는다.
 
-→ 사고 빈도만 보면 덜 위험해 보이지만, 응급 접근성을 결합하면 잠재 위험이 큰 지역으로 발굴된다.
+→ 단일 순위가 아니라, 여러 합리적 가중치에서 반복적으로 드러나는 응급 사각지대를 발굴한다.
 
 ## 데모
 
@@ -73,6 +74,7 @@ npm run dev   # http://localhost:3000
 2. min-max 정규화 후 가중합 (0.4 / 0.3 / 0.3) → **잠재 위험 지수** 정의
 3. XGBoost 회귀로 정의된 위험 지수를 재학습 → **SHAP 값으로 시군구별 상위 기여 요인 추출** (사고 예측이 아닌 surrogate 설명)
 4. 가상 응급의료 거점 추가 시뮬레이션 — 거리 피처 재계산 + 동일 모델 inference → 위험 지수 변화 (정책 효과 예측이 아니라 거리 기반 접근성 민감도 분석)
+5. 가중치 민감도 검증 — 126개 가중치 시나리오 + 사망률 소표본 보정으로 robust blind zone 산출 ([weight-sensitivity.md](docs/submission/weight-sensitivity.md))
 
 ## 선행 연구와의 관계
 
@@ -89,7 +91,7 @@ npm run dev   # http://localhost:3000
 - TAAS 사고다발지역 데이터는 전체 사고 X — 다발지점 한정. "연간 사고 건수" 대신 "TAAS 사고다발지역 데이터 내 사고 건수" 표기.
 - 119 출동 사건별 raw 비공개 → 응급 도착시간은 응급기관 거리 + 평균 속도(60km/h) 가정 추정.
 - 시군구 단위 평균 — 격자 내 변동성 평준화 (V1.1에서 1km 격자 검토).
-- 가중치 0.4 / 0.3 / 0.3은 실증 근거 없이 선택한 임의 설정. 다른 가중치 조합 시 결과 달라질 수 있음.
+- 가중치 0.4 / 0.3 / 0.3은 실증 근거 없는 선택이다. 이를 방어하기 위해 126개 가중치 시나리오 + 사망률 소표본 보정으로 순위 강건성을 검증했다([weight-sensitivity.md](docs/submission/weight-sensitivity.md)). 모든 순위는 기준 가중치 기준이며, 확정 위험 순위가 아니라 탐색 우선순위다.
 - 응급 접근성을 **직선거리**로 계산 (도로망·실제 응급차 평균 속도 미반영). 수요측 변수(인구밀도·고령자 비율 등) 미포함.
 
 ## 가점 신청 항목 (부여 여부는 심사위원단 판단)
@@ -105,5 +107,6 @@ npm run dev   # http://localhost:3000
 - [docs/submission/data_manifest.md](docs/submission/data_manifest.md) — 데이터 매니페스트
 - [docs/submission/external-review-2026-05-20.md](docs/submission/external-review-2026-05-20.md) — 외부 평가 1차
 - [docs/submission/case-study.md](docs/submission/case-study.md) — 대표 사례 (인제군)
+- [docs/submission/weight-sensitivity.md](docs/submission/weight-sensitivity.md) — 가중치 민감도 분석 (robust blind zone 검증)
 - [docs/submission/prior-art.md](docs/submission/prior-art.md) — 선행 연구 인지 + 차별점 정리
 - [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md) — AI 도구 활용 증빙

@@ -6,7 +6,7 @@
 
 ## 마지막 업데이트
 
-2026-05-23 — **Phase B/C/D 본체 완료**. 코드·문서 작업 끝. 남은 건 외부 AI 최종 검증 + T16 한태영 액션 (통계누리 zip → HWP → 영상 → 제출).
+2026-05-25 — **외부 AI 2차 평가 반영 완료 (Phase E)**. 가중치 민감도 분석(robust blind zone) + 사망률 소표본 보정 구현·문서화. 코드·문서 작업 끝. **변경분 11개 파일 working tree에 있고 아직 커밋 안 함 (한태영 confirm 대기)** + T16 한태영 액션 (배포·통계누리 zip·HWP·영상·제출).
 
 ---
 
@@ -48,13 +48,25 @@ CORS는 main.py에 `https://*.vercel.app` regex 이미 허용. **실제 Railway/
 | T14 ai-tool-evidence | `305b689` | 가점 3건 증빙 (Claude Code 활용 영역 + 한태영 판단 영역 + XGBoost/SHAP + 4종 융합) |
 | Prior-art | `aca8af2` | 선행 연구 조사 (Jung & Qin 시리즈) + README/case-study 인용 |
 
-### 외부 AI 평가 (2차) — 패키지 작성됨, 한태영 액션 대기
+### Phase E (외부 AI 2차 평가 반영) ✅ — 커밋 대기
 
-`docs/submission/external-review-request-2026-05-23.md` — 한태영이 ChatGPT/Claude/Gemini 중 1~2곳에 보내서 최종 검증. 평가 항목 5개 (독창성·방법론·정직성·발표 strategy·입상 가능성).
+외부 평가 방법론 1순위 약점 = **가중치 0.4/0.3/0.3 임의성**. 대응: 단일 순위 대신 **robust blind zone** 프레임으로 전환.
 
-### Phase D' — 외부 AI 평가 반영 (한태영 결과 받은 후)
+| 산출물 | 내용 |
+|---|---|
+| `backend/scripts/weight_sensitivity.py` | 재현 검증(오차 0) + 가중치 126개 시나리오 + 사망률 smoothing(empirical Bayes) |
+| `docs/submission/weight-sensitivity.md` | 방법·결과·해석·한계·재현 (핵심 방법론 증빙) |
+| `weight_sensitivity_summary.csv` / `smoothing_effect.csv` | 252개 시군구 강건성 지표 / 보정 전후 |
+| `presentation-outline.md` | 발표 초안 — XGBoost 4순위 격하 + robust 핵심 슬라이드 (한태영 재구성 필요) |
+| case-study/model_card/data_manifest/README/about/ContrastPanel 수정 | 가중치 한계 고지를 실제 수치로 교체, 순위 "기준 가중치" 명시 |
 
-평가 결과에 따라 README·발표자료·기획서에 추가 정정 또는 보강.
+**핵심 결과** (실제 계산값, 검증 오차 0):
+- robust(top10_share≥0.6) 8곳 중 6곳 대도시 → 비대도시 robust는 **인제·옹진뿐**
+- **옹진군**: 거리 75.3km 단독, 가중치+사망률 보정 양쪽 강건(4→3위) = 가장 안정적 사각지대
+- **인제군**: 가중치엔 강건(top10 0.905)하나 사망률 보정 시 2→15위 (사망률 1.0 = 사고 1건 산물) → 정직 고지, 거리 24.2km는 남음
+- frontend tsc/lint/build 7/7 통과
+
+**후속 과제(미착수)**: 직선거리 보정 시나리오(1.0/1.3/1.6/2.0배), 사고건수 log 변환 — weight-sensitivity.md 한계 섹션에 명시.
 
 ### T16 (한태영 액션 — 최종 제출 준비)
 
@@ -93,35 +105,39 @@ CORS는 main.py에 `https://*.vercel.app` regex 이미 허용. **실제 Railway/
 
 ## 🔔 새 세션 시작 시 — 한태영에게 먼저 물어볼 것
 
-**현재 상태 (2026-05-23 세션 끝 시점): 한태영이 외부 AI 2차 평가 결과를 곧 메인에게 전달할 예정.** `docs/submission/external-review-request-2026-05-23.md` 패키지를 한태영이 ChatGPT/Claude/Gemini 중 1~2곳에 보냈음 (또는 보낼 예정).
+**현재 상태 (2026-05-25): 외부 AI 2차 평가 반영(Phase E) 완료. 변경분 11개 파일 working tree에 있고 아직 커밋 안 함.**
 
-다음 중 어디 단계인가:
+먼저 물어볼 것:
 
-- **(a) 외부 AI 2차 평가 결과 받음** ← 가장 가능성 높음.
-  - 결과 텍스트 통째로 받아서 5개 항목(독창성·방법론·정직성·발표 strategy·입상 가능성)별로 정리
-  - 반영 패턴: **짧은 정정/한계 고지 추가는 묶어서 즉시 commit. 방법론 약점 지적(가중치 검증·수요측 변수·도로망 거리 등)처럼 분량 크면 끊고 한태영 결정. 입상 가능성/발표 strategy는 발표자료 outline 갱신**
-  - 결과 텍스트가 길면 `docs/submission/external-review-2026-05-23-result.md` 파일로 저장 후 분석
-- **(b) T16 한태영 액션 단계 — 통계누리 zip / HWP / 영상** → 어디 막혔나, 무엇 도와줄지
-- **(c) 새 의문 또는 정정** → 자유 텍스트로
+- **(a) Phase E 커밋할까?** ← 가장 먼저. 아래 '커밋 대기' 목록. master 직접 커밋이 이 repo 관행. "ㄱㄱ"면 git add 후 커밋.
+- **(b) 외부 평가 추가 반영?** 후속 과제(직선거리 보정 시나리오, 사고건수 log 변환)를 더 할지, 여기서 마무리하고 T16로 갈지.
+- **(c) T16 한태영 액션** (Railway/Vercel 배포·통계누리 zip·HWP 기획서·데모 영상) → 어디 막혔나, 무엇 도와줄지.
+
+### 커밋 대기 (Phase E)
+add 대상: `README.md`, `docs/submission/{case-study,data_manifest,model_card,weight-sensitivity,presentation-outline}.md`, `docs/submission/{weight_sensitivity_summary,smoothing_effect}.csv`, `frontend/app/about/page.tsx`, `frontend/components/ContrastPanel.tsx`, `backend/scripts/weight_sensitivity.py`, `docs/CURRENT_STATE.md`
+(제외: `docs/superpowers/plans/...v2-implementation.md`, `.claude/scheduled_tasks.lock` — Phase E 무관)
+메시지: `feat(analysis): 외부 AI 2차 평가 반영 — 가중치 민감도 분석 (robust blind zone)`
+
+### 환경 주의 (중요)
+`.venv`가 Python 3.14(C:\Python314) 기반인데 base가 사라져 **깨짐**. Python 스크립트는 `.venv\Scripts\python.exe` 말고 **`py -3.12`로 실행** (pandas/numpy 있음, pyarrow 설치 완료). geopandas/xgboost가 필요한 작업(build_features·train·inference)은 venv 재생성 필요할 수 있음.
 
 ---
 
 ## 다음 할 일
 
 **한태영 액션 대기**:
-- [ ] 외부 AI 평가 (패키지: `docs/submission/external-review-request-2026-05-23.md`) 1~2곳에 보내기
+- [ ] Phase E 변경 커밋 confirm (위 '커밋 대기')
 - [ ] Railway 가입 + 백엔드 배포 (Root Directory: `backend/`, NIXPACKS 자동)
 - [ ] Vercel 가입 + 프론트 배포 (Root Directory: `frontend/`, NEXT_PUBLIC_API_BASE_URL = Railway URL)
 - [ ] 통계누리 hNum=283 zip 다운로드 → HWP 확보
-- [ ] 기획서 3장 작성, 데모 영상 녹화
+- [ ] 기획서 3장 작성 (`presentation-outline.md` + `weight-sensitivity.md` 기반), 데모 영상 녹화
 - [ ] 2026-05-29 접수
 
 **Claude 도울 수 있는 것 (한태영 요청 시)**:
-- 외부 AI 평가 결과 정리·반영
-- HWP 본문 텍스트 초안 (한태영이 HWP에 붙여넣기)
+- 외부 평가 후속 과제 (직선거리 보정 시나리오, 사고건수 log 변환)
+- HWP 본문 텍스트 초안 (`presentation-outline.md` 기반, 한태영이 HWP에 붙여넣기)
 - 데모 영상 시나리오 텍스트
 - 배포 후 CORS·환경변수 갱신
-- 발표 슬라이드 outline
 
 ---
 
@@ -133,6 +149,8 @@ CORS는 main.py에 `https://*.vercel.app` regex 이미 허용. **실제 Railway/
 
 ## 최근 결정 (이번 세션)
 
+- 2026-05-25: 외부 AI 2차 평가 핵심 = 가중치 임의성. **robust blind zone** 프레임 채택. 가중치 126 시나리오 + 사망률 smoothing 실제 계산 → 인제는 사망률 보정에 민감(2→15위)이라 정직 고지, **옹진이 더 robust한 대표 사례로 격상**. 발표 outline에서 XGBoost를 4순위 설명 보조로 격하. 정규화 재현 검증 오차 0 → 분석 신뢰.
+- 2026-05-25: `.venv` 깨짐 발견 (Python 3.14 base 소실) → `py -3.12` + pyarrow로 분석 우회. 민감도 분석은 순수 pandas라 geopandas 불필요했음.
 - 2026-05-23: T8 메인 직접 작성 (subagent 두 번 실패 회피). 이후 T9·T10·T13·T14·T15·T12·prior-art 모두 메인 직접 + tsc/build 즉시 검증 패턴이 안정적이라 그대로 유지
 - 2026-05-23: 정직성 정정 — page.tsx의 "사고는 적은데 죽음은 많은" → "사고 건수만으로는 드러나지 않는 응급 사각지대", MetricCard 라벨 "연간 사고 건수" → "사고 건수 (TAAS 다발지점)", "평균 응급 도착시간" → "응급 도착시간 (추정)"
 - 2026-05-23: prior-art researcher subagent 1회 실행. Jung & Qin 시리즈 (2024 MDPI, 2025 TRR, 2020 ASCE)가 가장 가까운 선행으로 발견됨 → README·case-study에 짧은 인용 + prior-art.md 별도 정리. 발표·기획서에 "선행 인지 + 확장" 프레임 권장
