@@ -1,0 +1,17 @@
+# 빌드 컨텍스트 경량화 — 런타임 불필요분 제외
+data/raw
+data/sample
+data/external
+tests
+scripts
+*.csv
+*.md
+.env
+.env.*
+__pycache__
+**/__pycache__
+*.pyc
+.venv
+.pytest_cache
+Procfile
+railway.json
