@@ -105,6 +105,20 @@ def find(df: pd.DataFrame, keyword: str) -> pd.Series:
     return df[df["sgg_name"].str.contains(keyword, na=False)].iloc[0]
 
 
+def graded_distance_factor(dist_km: pd.Series) -> pd.Series:
+    """거리 구간별 도로망 우회 보정 배수 (외진 곳일수록 우회율 높다는 가정).
+
+    외부 평가가 제안한 유형별(산악/도서) 보정을, 유형 데이터 부재로 거리 구간
+    proxy로 근사한다. **가정이며 정밀 추정이 아니다.**
+      <5km ×1.0 / 5~15km ×1.3 / 15~30km ×1.6 / >=30km ×2.0
+    """
+    f = pd.Series(1.0, index=dist_km.index)
+    f[dist_km >= 5] = 1.3
+    f[dist_km >= 15] = 1.6
+    f[dist_km >= 30] = 2.0
+    return f
+
+
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     df = pd.read_parquet(GRID_FEATURES_PATH).copy()
@@ -193,6 +207,40 @@ def main() -> None:
               f"base{int(r['baseline_rank']):>3} med{r['rank_median']:>5.1f} "
               f"best{int(r['rank_best']):>3} worst{int(r['rank_worst']):>3} "
               f"t10={r['top10_share']:.2f} t20={r['top20_share']:.2f}")
+
+    # === 3. 추가 강건성 점검 (후속 과제) ================================
+    print("\n[추가 강건성 점검]")
+    base_rank = compute_score(df, *BASE_W).rank(ascending=False, method="min")
+
+    # 3a. 사고건수 log1p 정규화 (대도시 쏠림 완화)
+    rank_log = compute_score(df, *BASE_W, acc_transform="log1p").rank(ascending=False, method="min")
+    print("  [3a. 사고건수 log1p 정규화, baseline 가중치]")
+    for kw in ["인제", "옹진"]:
+        idx = df.index[df["sgg_name"].str.contains(kw, na=False)][0]
+        print(f"    {kw}: raw {int(base_rank[idx])}위 -> log {int(rank_log[idx])}위")
+    log_robust_nondaegu = df.loc[(rank_log <= 10), "sgg_name"].tolist()
+    print(f"    log1p top10: {log_robust_nondaegu}")
+
+    # 3b. 직선거리 균일 배수 -> min-max 순위 불변 입증
+    print("  [3b. 직선거리 균일 배수 -> 최대 순위변화 (0이면 순위 불변)]")
+    for fac in [1.3, 1.6, 2.0]:
+        d2 = df.copy()
+        d2["ems_distance_km"] = df["ems_distance_km"] * fac
+        d2["ems_response_min"] = df["ems_response_min"] * fac
+        r = compute_score(d2, *BASE_W).rank(ascending=False, method="min")
+        print(f"    x{fac}: {int((r - base_rank).abs().max())}")
+
+    # 3c. 거리 구간별 차등 보정 (외진 곳 우회 가중) -> robust 유지 확인
+    fac = graded_distance_factor(df["ems_distance_km"])
+    d3 = df.copy()
+    d3["ems_distance_km"] = df["ems_distance_km"] * fac
+    d3["ems_response_min"] = df["ems_response_min"] * fac
+    rank_graded = compute_score(d3, *BASE_W).rank(ascending=False, method="min")
+    print("  [3c. 거리 구간별 차등 보정, baseline 가중치]")
+    for kw in ["인제", "옹진"]:
+        idx = df.index[df["sgg_name"].str.contains(kw, na=False)][0]
+        print(f"    {kw}: 직선 {int(base_rank[idx])}위 -> 보정 {int(rank_graded[idx])}위")
+    print(f"    보정 후 top10: {df.loc[(rank_graded <= 10), 'sgg_name'].tolist()}")
 
     print(f"\n저장: {OUT_DIR / 'weight_sensitivity_summary.csv'}")
     print(f"저장: {OUT_DIR / 'smoothing_effect.csv'}")
