@@ -109,7 +109,7 @@ CORS는 main.py에 `https://*.vercel.app` regex 이미 허용. **실제 Railway/
 
 먼저 물어볼 것:
 
-- **(a) 인구 데이터 넣었나?** ← 가장 먼저. `jumin.mois.go.kr` 고령인구현황 CSV를 `backend/data/raw/`에. 들어오면 레버1(수요 교차분석)·레버4(수혜인구)로 "구조적 취약" 정량화. **데이터 없으면 진행 불가 — 인구 날조는 절대원칙 위반이라 자율 불가.**
+- **(a) 인구 데이터 넣었나?** ← 가장 먼저. `jumin.mois.go.kr` 고령인구현황 CSV를 `backend/data/raw/`에. 들어오면 레버1(수요 교차분석)·레버4(수혜인구)로 "구조적 취약" 정량화. **데이터 없으면 진행 불가 — 인구 날조는 절대원칙 위반이라 자율 불가.** 병합 스크립트 `backend/scripts/merge_population.py` 준비됨(자동 컬럼탐지 + 시군구명 매칭 + 실패 리포트) → CSV 넣고 `py -3.12 scripts/merge_population.py <경로>` 실행만 하면 `grid_features_demo.parquet` 생성. 컬럼 미탐지 시 `detect_cols()` 미세조정.
 - **(b) 119 방향 = B 적용됨** ("4종 동시 융합"→"3종 융합+119 교차검증"으로 정직화). A(변수 통합) 원하면 되돌릴 수 있으나, A는 119의 경기·대구 본부 누락+옹진 도서 미포착으로 risk_index 왜곡 → 비추천.
 - **(c) T16 한태영 액션** (Railway/Vercel 배포·통계누리 zip·HWP 기획서·데모 영상) → 어디 막혔나, 무엇 도와줄지.
 
