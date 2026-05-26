@@ -6,7 +6,7 @@
 
 ## 마지막 업데이트
 
-2026-05-26 — **외부 AI 2차 평가 반영 완료 (Phase E)** + 후속 강건성 점검 완료. 가중치 민감도(robust blind zone) + 사망률 smoothing + 직선거리/log 강건성. **Phase E 본체 커밋됨 (d0dd250), 후속분 커밋 진행.** 남은 건 T16 한태영 액션 (배포·통계누리 zip·HWP·영상·제출).
+2026-05-26 — **발견 임팩트 강화 세션 (Phase F)**. 레버2 도로 실거리(OSRM 252개, 우회율 중앙값 1.49x → 실거리로 재산출해도 robust 인제·옹진 불변)·레버3 외부검증(정부 응급의료취약지 수렴타당도)·119 가점표현 정직화(B: "4종 동시 융합"→"3종 융합+119 교차검증") 완료. 옹진 거점 시뮬(-81%)·인제 119 188건 보강. 환경 복구(py-3.12에 geopandas/xgboost/shap 설치). **레버1·4(인구·고령 수요변수)는 인구 데이터 대기 — 한태영이 jumin 고령인구 CSV를 `backend/data/raw/`에 넣어야 진행.** T16 한태영 액션(배포·통계누리 zip·HWP·영상·제출)도 여전히 남음.
 
 ---
 
@@ -105,21 +105,19 @@ CORS는 main.py에 `https://*.vercel.app` regex 이미 허용. **실제 Railway/
 
 ## 🔔 새 세션 시작 시 — 한태영에게 먼저 물어볼 것
 
-**현재 상태 (2026-05-25): 외부 AI 2차 평가 반영(Phase E) 완료. 변경분 11개 파일 working tree에 있고 아직 커밋 안 함.**
+**현재 상태 (2026-05-26): 발견 임팩트 강화(Phase F) 완료·커밋됨.**
 
 먼저 물어볼 것:
 
-- **(a) Phase E 커밋할까?** ← 가장 먼저. 아래 '커밋 대기' 목록. master 직접 커밋이 이 repo 관행. "ㄱㄱ"면 git add 후 커밋.
-- **(b) 방법론 더 보강?** 외부 평가 후속 강건성 점검까지 완료(§6). 남은 건 도로망 실거리(네트워크)·수요측 변수인데 데이터·시간상 V2 과제 → 여기서 마무리하고 T16 권장.
+- **(a) 인구 데이터 넣었나?** ← 가장 먼저. `jumin.mois.go.kr` 고령인구현황 CSV를 `backend/data/raw/`에. 들어오면 레버1(수요 교차분석)·레버4(수혜인구)로 "구조적 취약" 정량화. **데이터 없으면 진행 불가 — 인구 날조는 절대원칙 위반이라 자율 불가.**
+- **(b) 119 방향 = B 적용됨** ("4종 동시 융합"→"3종 융합+119 교차검증"으로 정직화). A(변수 통합) 원하면 되돌릴 수 있으나, A는 119의 경기·대구 본부 누락+옹진 도서 미포착으로 risk_index 왜곡 → 비추천.
 - **(c) T16 한태영 액션** (Railway/Vercel 배포·통계누리 zip·HWP 기획서·데모 영상) → 어디 막혔나, 무엇 도와줄지.
 
-### 커밋 대기 (Phase E)
-add 대상: `README.md`, `docs/submission/{case-study,data_manifest,model_card,weight-sensitivity,presentation-outline}.md`, `docs/submission/{weight_sensitivity_summary,smoothing_effect}.csv`, `frontend/app/about/page.tsx`, `frontend/components/ContrastPanel.tsx`, `backend/scripts/weight_sensitivity.py`, `docs/CURRENT_STATE.md`
-(제외: `docs/superpowers/plans/...v2-implementation.md`, `.claude/scheduled_tasks.lock` — Phase E 무관)
-메시지: `feat(analysis): 외부 AI 2차 평가 반영 — 가중치 민감도 분석 (robust blind zone)`
+### Phase F 커밋됨
+`feat(analysis): 외부검증·도로실거리 robust 재산출 + 119 가점표현 정직화`. 신규: `external-validation.md`·`road_distance_252.csv`·`road_robustness_summary.csv` + 스크립트 3개(`road_distance_validation`·`build_road_distances`·`road_robustness`). 수정: README·case-study·weight-sensitivity·data_manifest·presentation-outline·ai-tool-evidence. **다음 커밋은 인구 데이터 들어온 뒤 레버1·4.**
 
 ### 환경 주의 (중요)
-`.venv`가 Python 3.14(C:\Python314) 기반인데 base가 사라져 **깨짐**. Python 스크립트는 `.venv\Scripts\python.exe` 말고 **`py -3.12`로 실행** (pandas/numpy 있음, pyarrow 설치 완료). geopandas/xgboost가 필요한 작업(build_features·train·inference)은 venv 재생성 필요할 수 있음.
+`.venv`는 Python 3.14 base 소실로 **깨짐** (쓰지 말 것). **모든 백엔드 Python은 `py -3.12`로 실행** — 2026-05-26 geopandas 1.1.3 / xgboost 3.2.0 / shap 0.51.0 / sklearn / shapely / pyproj / openpyxl 설치 완료해 build_features·train·inference·OSRM 검증 모두 py-3.12로 가능. venv 재생성 불필요.
 
 ---
 

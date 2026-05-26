@@ -9,7 +9,7 @@
 |---|---|---|---|---|---|---|
 | 전국교통사고다발지역표준데이터 | 공공데이터포털 / 한국도로교통공단 TAAS | https://www.data.go.kr/data/15029185/standard.do | 2026-05-20 | CSV (cp949, 12,780행) | 시군구 단위 그루핑·집계 (`backend/src/data_pipeline.py` `aggregate_accidents_by_sgg`) | 공공데이터포털 표준데이터 (이용 제한 명시 사항 별도 확인) |
 | 국립중앙의료원 응급의료기관 정보 조회 서비스 | 공공데이터포털 오픈 API / 국립중앙의료원 (NMC) | `https://apis.data.go.kr/B552657/ErmctInfoInqireService/getEgytListInfoInqire` | 2026-05-20 | XML → CSV 변환 (`backend/scripts/fetch_api_data.py`, 534행) | wgs84Lat/wgs84Lon으로 GeoDataFrame 생성 → 시군구 중심점과 nearest 거리(km) 계산 | 공공데이터포털 활용 신청 승인 (한태영 인증키 발급, 활용기간 2026-05-20 ~ 2028-05-20) |
-| 소방청 구급통계서비스 | 공공데이터포털 오픈 API / 소방청 | `https://apis.data.go.kr/1661000/EmergencyStatisticsService/getTrafficAccidentEmgActStats` | 2026-05-20 | XML → CSV 변환 (12,789행, 2023년 필터링) | 시도본부별 페이지네이션 수집. **현재는 사고-구급 출동 빈도만 수집했고, 사건별 출동시간 컬럼이 없어서 응급 도착시간은 응급기관 거리 기반 추정으로 대체** (`backend/src/data_pipeline.py` `estimate_ems_response_time_min`) | 공공데이터포털 활용 신청 승인 |
+| 소방청 구급통계서비스 | 공공데이터포털 오픈 API / 소방청 | `https://apis.data.go.kr/1661000/EmergencyStatisticsService/getTrafficAccidentEmgActStats` | 2026-05-20 | XML → CSV 변환 (12,789행, 2023년 필터링) | 시도본부별 페이지네이션 수집. **현재는 사고-구급 출동 빈도만 수집했고, 사건별 출동시간 컬럼이 없어서 응급 도착시간은 응급기관 거리 기반 추정으로 대체** (`backend/src/data_pipeline.py` `estimate_ems_response_time_min`). **risk_index 변수로는 미반영**이며, 다발지점 한계 교차검증(인제 다발지점 1건 vs 119 교통구급 이송 188건)에 활용 | 공공데이터포털 활용 신청 승인 |
 | 시군구 행정경계 SHP (센서스경계) | 브이월드(V-World) 공간정보 다운로드 / 통계청 (KOSTAT) | https://www.vworld.kr → 다운로드 → 공간정보 다운로드 → "(센서스경계)시군구경계" | 2026-05-20 | SHP zip (`BND_SIGUNGU_PG.zip`, 252행, BASE_DATE 20250630, CRS EPSG:5186) | EPSG:5179 변환 → 중심점·면적 산출 (`backend/src/data_pipeline.py` `load_sgg_centers`). 폴리곤 원본 변경 없음, 분석 단위 추출(centroid)·CRS 재투영만 수행 | **CC BY-NC-ND** (저작자표시·비영리·변경금지). 출처: 통계청 (센서스경계)시군구경계 |
 
 ## 안 쓴 데이터 (참고)
@@ -52,3 +52,6 @@ risk_index = 0.4 × minmax(accident_count)
 - `backend/scripts/fetch_api_data.py` — API 자동 호출
 - `backend/scripts/build_features.py` — 가공 + grid_features.parquet 생성
 - `backend/src/train.py` — XGBoost 학습 + 직렬화
+- `backend/scripts/weight_sensitivity.py` — 126개 가중치 시나리오 + 사망률 보정 robust 검증
+- `backend/scripts/build_road_distances.py` — 252개 OSRM 도로 실거리 계산 → `road_distance_252.csv`
+- `backend/scripts/road_robustness.py` — 직선거리 vs 도로 실거리 robust 비교 재산출

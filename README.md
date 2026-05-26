@@ -75,6 +75,7 @@ npm run dev   # http://localhost:3000
 3. XGBoost 회귀로 정의된 위험 지수를 재학습 → **SHAP 값으로 시군구별 상위 기여 요인 추출** (사고 예측이 아닌 surrogate 설명)
 4. 가상 응급의료 거점 추가 시뮬레이션 — 거리 피처 재계산 + 동일 모델 inference → 위험 지수 변화 (정책 효과 예측이 아니라 거리 기반 접근성 민감도 분석)
 5. 가중치 민감도 검증 — 126개 가중치 시나리오 + 사망률 소표본 보정으로 robust blind zone 산출 ([weight-sensitivity.md](docs/submission/weight-sensitivity.md))
+6. 외부 타당성 검증 — robust 사각지대(인제·옹진)가 정부 응급의료취약지 공식 지정(도달시간+인구 기반, 방법 독립)과 같은 곳을 가리킴 = 수렴 타당도 ([external-validation.md](docs/submission/external-validation.md))
 
 ## 선행 연구와의 관계
 
@@ -83,7 +84,7 @@ npm run dev   # http://localhost:3000
 - **Jung & Qin (2024, MDPI Sustainability)** — 한국 EMS 인프라 + 사고 데이터 융합, 16-20분 응급 대응시간 구간이 사망률 유의 증가와 연결. EMS 입지 우선순위 제안. **BlindZone과 차이**: GWLR 사용(XGBoost X), What-if 시뮬레이션 없음, 충청권 중심 점단위 분석.
 - **Jung & Qin (2025, Sage TRR)** — 한국 데이터 + XGBoost + SHAP으로 사고 심각도 영향 요인 식별. **BlindZone과 차이**: 분석 단위가 개별 사고건이지 시군구 행정단위가 아님, "사각지대 발굴"이나 가상 거점 시뮬레이션 없음, 학술 분석.
 
-본 프로젝트의 차별점은 **(a) 시군구 252개 전국 단위 + (b) TAAS·응급의료기관·119 구급통계·행정경계 4종 동시 융합 + (c) 인터랙티브 What-if 시뮬레이션 + (d) 풀스택 웹서비스**의 결합이다. 자세한 선행 조사 결과는 [docs/submission/prior-art.md](docs/submission/prior-art.md).
+본 프로젝트의 차별점은 **(a) 시군구 252개 전국 단위 + (b) TAAS·응급의료기관·행정경계 3종을 시군구 단위로 융합(+119 구급통계 교차검증) + (c) 인터랙티브 What-if 시뮬레이션 + (d) 풀스택 웹서비스**의 결합이다. 자세한 선행 조사 결과는 [docs/submission/prior-art.md](docs/submission/prior-art.md).
 
 ## 한계 및 정직 고지
 
@@ -92,13 +93,13 @@ npm run dev   # http://localhost:3000
 - 119 출동 사건별 raw 비공개 → 응급 도착시간은 응급기관 거리 + 평균 속도(60km/h) 가정 추정.
 - 시군구 단위 평균 — 격자 내 변동성 평준화 (V1.1에서 1km 격자 검토).
 - 가중치 0.4 / 0.3 / 0.3은 실증 근거 없는 선택이다. 이를 방어하기 위해 126개 가중치 시나리오 + 사망률 소표본 보정으로 순위 강건성을 검증했다([weight-sensitivity.md](docs/submission/weight-sensitivity.md)). 모든 순위는 기준 가중치 기준이며, 확정 위험 순위가 아니라 탐색 우선순위다.
-- 응급 접근성을 **직선거리**로 계산 (도로망·실제 응급차 평균 속도 미반영). 수요측 변수(인구밀도·고령자 비율 등) 미포함.
+- 응급 접근성을 **직선거리**로 계산. 단 252개 전체를 OSRM 도로망 실거리로 재산출했고(인제 직선 24.2→실거리 37.2km/48.7분, 옹진 75.3→151.7km/183.5분, 우회율 중앙값 1.49x), **직선거리가 외진 사각지대를 오히려 과소추정**하며 **실거리로 재산출해도 robust 사각지대(인제·옹진) 결론은 불변**임을 확인했다(weight-sensitivity §6.1). 수요측 변수(인구·고령자 비율)는 보강 과제.
 
 ## 가점 신청 항목 (부여 여부는 심사위원단 판단)
 
 - **AI 학습도구 (5점 신청)**: Claude Code를 코딩 보조로 활용. 사용 기록·기여 증빙은 [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md)
 - **AI 분석도구 (5점 신청)**: XGBoost 회귀 + SHAP TreeExplainer
-- **데이터 융합 (5점 신청)**: 공공데이터 4종을 시군구 단위로 결합 (TAAS × 응급의료기관 × 119 통계 × 행정경계)
+- **데이터 융합 (5점 신청)**: 공공데이터 3종(TAAS × 응급의료기관 × 행정경계)을 시군구 단위로 융합해 위험지수 산출 + 119 구급통계로 교차검증 (도착시간 추정 현실성·다발지점 한계)
 
 ## 문서
 
@@ -108,5 +109,6 @@ npm run dev   # http://localhost:3000
 - [docs/submission/external-review-2026-05-20.md](docs/submission/external-review-2026-05-20.md) — 외부 평가 1차
 - [docs/submission/case-study.md](docs/submission/case-study.md) — 대표 사례 (인제군)
 - [docs/submission/weight-sensitivity.md](docs/submission/weight-sensitivity.md) — 가중치 민감도 분석 (robust blind zone 검증)
+- [docs/submission/external-validation.md](docs/submission/external-validation.md) — 외부 타당성 검증 (정부 응급의료취약지 일치)
 - [docs/submission/prior-art.md](docs/submission/prior-art.md) — 선행 연구 인지 + 차별점 정리
 - [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md) — AI 도구 활용 증빙
