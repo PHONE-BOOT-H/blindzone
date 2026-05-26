@@ -59,10 +59,12 @@ def load_any(path: Path) -> pd.DataFrame:
 def detect_cols(df: pd.DataFrame):
     cols = [str(c) for c in df.columns]
     region = next((c for c in cols if "행정구역" in c or "시군구" in c or c.strip() == "지역"), None)
-    # 총인구: '총인구' 포함, '65/고령' 미포함
-    total = next((c for c in cols if "총인구" in c and "65" not in c and "고령" not in c), None)
-    # 고령(65+) 수: '65세이상' or '고령인구' (비율 컬럼 제외)
-    elderly = next((c for c in cols if ("65세이상" in c or "고령인구" in c) and "비율" not in c and "구성비" not in c), None)
+    # 총인구: '총인구' 포함 또는 '_전체'로 끝남(행안부 고령현황 포맷). 65/고령/남/여 미포함
+    total = next((c for c in cols if ("총인구" in c or c.endswith("_전체"))
+                  and "65" not in c and "고령" not in c and "남자" not in c and "여자" not in c), None)
+    # 고령(65+) 수: '65세이상' or '고령인구', 비율·남/여 컬럼 제외
+    elderly = next((c for c in cols if ("65세이상" in c or "고령인구" in c)
+                    and "비율" not in c and "구성비" not in c and "남자" not in c and "여자" not in c), None)
     ratio = next((c for c in cols if ("고령" in c or "65" in c) and ("비율" in c or "구성비" in c)), None)
     return region, total, elderly, ratio
 

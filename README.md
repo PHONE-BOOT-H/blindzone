@@ -76,6 +76,7 @@ npm run dev   # http://localhost:3000
 4. 가상 응급의료 거점 추가 시뮬레이션 — 거리 피처 재계산 + 동일 모델 inference → 위험 지수 변화 (정책 효과 예측이 아니라 거리 기반 접근성 민감도 분석)
 5. 가중치 민감도 검증 — 126개 가중치 시나리오 + 사망률 소표본 보정으로 robust blind zone 산출 ([weight-sensitivity.md](docs/submission/weight-sensitivity.md))
 6. 외부 타당성 검증 — robust 사각지대(인제·옹진)가 정부 응급의료취약지 공식 지정(도달시간+인구 기반, 방법 독립)과 같은 곳을 가리킴 = 수렴 타당도 ([external-validation.md](docs/submission/external-validation.md))
+7. 수요(고령) 교차분석 — robust 사각지대는 고령비율도 대도시 robust의 1.5배(인제·옹진 평균 32.6% vs 대도시 20.9%) → 공급(응급거리)+수요(고령) 양쪽 취약 ([demand-analysis.md](docs/submission/demand-analysis.md))
 
 ## 선행 연구와의 관계
 
@@ -93,7 +94,7 @@ npm run dev   # http://localhost:3000
 - 119 출동 사건별 raw 비공개 → 응급 도착시간은 응급기관 거리 + 평균 속도(60km/h) 가정 추정.
 - 시군구 단위 평균 — 격자 내 변동성 평준화 (V1.1에서 1km 격자 검토).
 - 가중치 0.4 / 0.3 / 0.3은 실증 근거 없는 선택이다. 이를 방어하기 위해 126개 가중치 시나리오 + 사망률 소표본 보정으로 순위 강건성을 검증했다([weight-sensitivity.md](docs/submission/weight-sensitivity.md)). 모든 순위는 기준 가중치 기준이며, 확정 위험 순위가 아니라 탐색 우선순위다.
-- 응급 접근성을 **직선거리**로 계산. 단 252개 전체를 OSRM 도로망 실거리로 재산출했고(인제 직선 24.2→실거리 37.2km/48.7분, 옹진 75.3→151.7km/183.5분, 우회율 중앙값 1.49x), **직선거리가 외진 사각지대를 오히려 과소추정**하며 **실거리로 재산출해도 robust 사각지대(인제·옹진) 결론은 불변**임을 확인했다(weight-sensitivity §6.1). 수요측 변수(인구·고령자 비율)는 보강 과제.
+- 응급 접근성을 **직선거리**로 계산. 단 252개 전체를 OSRM 도로망 실거리로 재산출했고(인제 직선 24.2→실거리 37.2km/48.7분, 옹진 75.3→151.7km/183.5분, 우회율 중앙값 1.49x), **직선거리가 외진 사각지대를 오히려 과소추정**하며 **실거리로 재산출해도 robust 사각지대(인제·옹진) 결론은 불변**임을 확인했다(weight-sensitivity §6.1). 수요측 변수(인구·고령자 비율)도 행안부 주민등록 고령인구현황으로 교차분석했다 — robust 사각지대는 고령비율도 상위(인제 28.0%·옹진 37.2% vs 대도시 robust 평균 20.9%, [demand-analysis.md](docs/submission/demand-analysis.md)).
 
 ## 가점 신청 항목 (부여 여부는 심사위원단 판단)
 
@@ -110,5 +111,6 @@ npm run dev   # http://localhost:3000
 - [docs/submission/case-study.md](docs/submission/case-study.md) — 대표 사례 (인제군)
 - [docs/submission/weight-sensitivity.md](docs/submission/weight-sensitivity.md) — 가중치 민감도 분석 (robust blind zone 검증)
 - [docs/submission/external-validation.md](docs/submission/external-validation.md) — 외부 타당성 검증 (정부 응급의료취약지 일치)
+- [docs/submission/demand-analysis.md](docs/submission/demand-analysis.md) — 수요(고령) 교차분석 + 수혜인구 (구조적 취약 입증)
 - [docs/submission/prior-art.md](docs/submission/prior-art.md) — 선행 연구 인지 + 차별점 정리
 - [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md) — AI 도구 활용 증빙
