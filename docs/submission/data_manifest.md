@@ -12,6 +12,7 @@
 | 소방청 구급통계서비스 | 공공데이터포털 오픈 API / 소방청 | `https://apis.data.go.kr/1661000/EmergencyStatisticsService/getTrafficAccidentEmgActStats` | 2026-05-20 | XML → CSV 변환 (12,789행, 2023년 필터링) | 시도본부별 페이지네이션 수집. **현재는 사고-구급 출동 빈도만 수집했고, 사건별 출동시간 컬럼이 없어서 응급 도착시간은 응급기관 거리 기반 추정으로 대체** (`backend/src/data_pipeline.py` `estimate_ems_response_time_min`). **risk_index 변수로는 미반영**이며, 다발지점 한계 교차검증(인제 다발지점 1건 vs 119 교통구급 이송 188건)에 활용 | 공공데이터포털 활용 신청 승인 |
 | 시군구 행정경계 SHP (센서스경계) | 브이월드(V-World) 공간정보 다운로드 / 통계청 (KOSTAT) | https://www.vworld.kr → 다운로드 → 공간정보 다운로드 → "(센서스경계)시군구경계" | 2026-05-20 | SHP zip (`BND_SIGUNGU_PG.zip`, 252행, BASE_DATE 20250630, CRS EPSG:5186) | EPSG:5179 변환 → 중심점·면적 산출 (`backend/src/data_pipeline.py` `load_sgg_centers`). 폴리곤 원본 변경 없음, 분석 단위 추출(centroid)·CRS 재투영만 수행 | **CC BY-NC-ND** (저작자표시·비영리·변경금지). 출처: 통계청 (센서스경계)시군구경계 |
 | 주민등록 고령 인구현황 | 행정안전부 (jumin.mois.go.kr) | https://jumin.mois.go.kr → 고령 인구현황 → 전국/시군구/전체시군구현황 | 2026-05-26 | CSV (cp949, 296행: 시도+시군구) | 시군구명 매칭으로 grid_features에 65세이상비율 결합 (`backend/scripts/merge_population.py`, 252/252 매칭). **위험지수 변수가 아닌 수요측 교차 해석 변수** (demand-analysis.md) | 행정안전부 공공데이터 (출처표시) |
+| 시군구별 전체 교통사고 통계 | 한국도로교통공단 (공공데이터포털) | https://www.data.go.kr/data/15070297 | 2026-05-26 | CSV (cp949, 229행) | 시군구명 매칭으로 다발지점 사고 vs 전체 사고 대조 (`backend/scripts/accident_total_compare.py`). **위험지수 변수가 아닌 다발지점 한계 검증용** (인제 다발1/전체83, 옹진 다발0/전체27) | 한국도로교통공단 공공데이터 (출처표시) |
 
 ## 안 쓴 데이터 (참고)
 
@@ -58,3 +59,4 @@ risk_index = 0.4 × minmax(accident_count)
 - `backend/scripts/road_robustness.py` — 직선거리 vs 도로 실거리 robust 비교 재산출
 - `backend/scripts/merge_population.py` — 행안부 고령인구현황 → grid_features_demo.parquet 결합
 - `backend/scripts/demand_analysis.py` — 수요(고령) 교차분석 + 수혜인구 정량화
+- `backend/scripts/accident_total_compare.py` — 다발지점 vs 전체 교통사고 대조 (다발지점 한계 검증)
