@@ -78,6 +78,9 @@ logs/
 **/data/*.csv
 **/data/*.json
 !**/data/sample/
+# 프론트 정적 fallback 스냅샷은 배포에 필요 — 추적 (Vercel이 서빙)
+!frontend/public/data/
+!frontend/public/data/*.json
 
 # 학습 모델: 배포 편의를 위해 git에 포함 (룰 제거)
 # 매우 큰 모델은 별도 처리
