@@ -30,8 +30,23 @@ def main():
             print(f"     saved {name}", flush=True)
 
         shot("/", "10_demo_main.png")            # 메인 지도 + TOP10
-        shot("/policy", "12_demo_policy.png")     # 정책 시뮬레이터
         shot("/about", "13_demo_about.png")       # About
+
+        # 정책 시뮬레이터 — 옹진 인근 가상 거점 추가 후 결과 화면
+        try:
+            page.goto(BASE + "/policy", wait_until="networkidle", timeout=60000)
+            time.sleep(3)
+            ins = page.locator("input")
+            ins.nth(0).fill("125.70")   # 경도
+            ins.nth(1).fill("37.66")    # 위도
+            page.get_by_role("button", name="추가").click()
+            time.sleep(7)               # simulate 호출 + 지도/지표 렌더
+            page.screenshot(path=str(OUT / "12_demo_policy.png"), full_page=True)
+            print("     saved 12_demo_policy.png (옹진 거점 추가 결과)", flush=True)
+        except Exception as e:
+            print("     정책 거점추가 캡처 실패, 초기화면으로 대체:", str(e)[:70], flush=True)
+            page.goto(BASE + "/policy", wait_until="networkidle"); time.sleep(4)
+            page.screenshot(path=str(OUT / "12_demo_policy.png"))
 
         # 시민 모드 — 옹진군 선택 상세 + SHAP (전체 페이지)
         for label in ["옹진군", "인천 옹진군", "강원 인제군", "인제군"]:
