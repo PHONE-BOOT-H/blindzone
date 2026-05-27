@@ -107,9 +107,10 @@ npm run dev   # http://localhost:3000
 
 ## 가점 신청 항목 (부여 여부는 심사위원단 판단)
 
-- **AI 학습도구 (5점 신청)**: Claude Code를 코딩 보조로 활용. 사용 기록·기여 증빙은 [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md)
-- **AI 분석도구 (5점 신청)**: XGBoost 회귀 + SHAP TreeExplainer
-- **데이터 융합 (5점 신청)**: 공공데이터 3종(TAAS × 응급의료기관 × 행정경계)을 시군구 단위로 융합해 위험지수 산출 + 119 구급통계로 교차검증 (도착시간 추정 현실성·다발지점 한계)
+- **AI 학습도구 (5점 신청)**: XGBoost 회귀로 정의된 위험지수를 학습·재현 (R²=0.90, 정의식 재현도)
+- **AI 분석도구 (5점 신청)**: SHAP TreeExplainer로 시군구별 위험 기여요인 분석
+- **데이터 융합 (5점 신청)**: 공공데이터 3종(TAAS × 응급의료기관 × 행정경계)을 시군구 단위로 융합 + 119 구급통계로 교차검증
+- (참고) 생성형 AI(Claude Code)는 코드·문서 작성 보조에 활용 — 데이터 선정·지표 설계·해석은 사람이 직접 수행. 증빙: [docs/submission/ai-tool-evidence.md](docs/submission/ai-tool-evidence.md)
 
 ## 문서
 
