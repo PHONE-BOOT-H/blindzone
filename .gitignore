@@ -97,3 +97,22 @@ logs/
 notes/personal/
 scratch/
 notion-exports/
+
+# ============================
+# 공개 repo 제외 — 내부 운영·AI작업·제출 준비물 (로컬엔 유지)
+# ============================
+/CLAUDE.md
+/.claude/
+/docs/CURRENT_STATE.md
+/docs/superpowers/
+/docs/DECISION_LOG.md
+/docs/RETRO_LOG.md
+/docs/CHANGELOG.md
+/docs/PROJECT_SPEC.md
+/docs/submission/external-review-2026-05-20.md
+/docs/submission/external-review-request-2026-05-23.md
+/docs/submission/proposal-draft.md
+/docs/submission/demo-script.md
+/docs/submission/presentation-outline.md
+/2026경진대회_기획서(최종).pdf
+/대회정보.txt
