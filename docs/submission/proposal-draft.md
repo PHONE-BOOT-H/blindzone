@@ -1,7 +1,7 @@
 # BlindZone 기획서 본문 초안 (HWP 붙여넣기용)
 
 > 통계누리 HWP 양식에 붙여넣을 본문 텍스트 초안. 외부 평가 권고 구조(첫 2페이지에 문제·비교·발견·검증·제품·한계). 표현은 검증된 사실만. **확정 위험 판정이 아니라 현장검증 우선순위**로 일관 서술.
-> 라이브: 프론트 https://blindzone-115nj616w-hantaeyoungs-projects.vercel.app · 백엔드 https://hananhan-blindzone-backend.hf.space · 코드 https://github.com/PHONE-BOOT-H/blindzone
+> 라이브: 프론트 https://blindzone-brown.vercel.app · 백엔드 https://hananhan-blindzone-backend.hf.space · 코드 https://github.com/PHONE-BOOT-H/blindzone
 
 ---
 
