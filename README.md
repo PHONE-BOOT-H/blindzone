@@ -104,10 +104,8 @@ npm run dev   # http://localhost:3000
 
 ## 문서
 
-- [docs/PROJECT_SPEC.md](docs/PROJECT_SPEC.md) — 살아있는 스펙
 - [docs/submission/model_card.md](docs/submission/model_card.md) — 모델 카드 (surrogate 정의 등)
 - [docs/submission/data_manifest.md](docs/submission/data_manifest.md) — 데이터 매니페스트
-- [docs/submission/external-review-2026-05-20.md](docs/submission/external-review-2026-05-20.md) — 외부 평가 1차
 - [docs/submission/case-study.md](docs/submission/case-study.md) — 대표 사례 (인제군)
 - [docs/submission/weight-sensitivity.md](docs/submission/weight-sensitivity.md) — 가중치 민감도 분석 (robust blind zone 검증)
 - [docs/submission/external-validation.md](docs/submission/external-validation.md) — 외부 타당성 검증 (정부 응급의료취약지 일치)
