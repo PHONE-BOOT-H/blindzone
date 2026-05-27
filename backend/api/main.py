@@ -22,3 +22,17 @@ app.add_middleware(
 )
 
 app.include_router(router, prefix="/api")
+
+
+@app.get("/")
+def root():
+    """루트 안내 — 심사 중 직접 접속 시 서비스 상태/엔드포인트 표시."""
+    return {
+        "service": "BlindZone API",
+        "status": "ok",
+        "frontend": "https://blindzone-brown.vercel.app",
+        "docs": "/docs",
+        "health": "/api/health",
+        "endpoints": ["/api/features", "/api/features/{sgg_code}", "/api/top10",
+                      "/api/contrast", "/api/simulate"],
+    }
