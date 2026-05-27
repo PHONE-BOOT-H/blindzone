@@ -4,6 +4,11 @@
 >
 > 사고 건수만으로는 드러나지 않는 잠재 위험지대를, 사망률·응급 접근성과 결합해 탐색합니다.
 
+**🔗 라이브 데모: https://blindzone-brown.vercel.app** &nbsp;·&nbsp; API: https://hananhan-blindzone-backend.hf.space
+> 백엔드가 잠들어 있어도 지도·위험지수·기여요인·대조는 정적 스냅샷으로 동작합니다.
+
+![BlindZone 메인 — 전국 위험지도 + TOP10](docs/submission/evidence/10_demo_main.png)
+
 ## 무엇을 푸는가
 
 한국 교통사고 골든타임 대응 부족이 보도·연구에서 지적되어 왔다 (예: 머니S 2025-04-10, "선진국 대비 사망률 2배"·"사고 후 1시간 내 수술실 도착률 50%"). 기존 사고 다발지도는 사고 빈도 위주라는 점에 주목해, BlindZone은 **사고 빈도·사망사고 비율·응급의료 접근성을 결합한 시군구 단위 탐색형 위험 지수**를 산출하고, 가상 응급의료 거점 추가 시 거리 기반 접근성이 어떻게 변하는지 보여주는 surrogate 도구다.
@@ -22,14 +27,18 @@
 
 ## 데모
 
-- 프론트엔드 (Vercel): _배포 후 URL 추가_
-- 백엔드 (Railway): _배포 후 URL 추가_
+- **프론트엔드**: https://blindzone-brown.vercel.app
+- **백엔드 API**: https://hananhan-blindzone-backend.hf.space (`/api/health`, `/api/features`, `/api/simulate` 등)
+
+| 시군구 클릭 → 위험요인 설명(SHAP) | 정책 시뮬레이터 (가상 응급거점 추가) |
+|---|---|
+| ![상세](docs/submission/evidence/11_demo_detail.png) | ![시뮬레이터](docs/submission/evidence/12_demo_policy.png) |
 
 ## 기술 스택
 
 - **프론트엔드**: Next.js 14 (App Router) · TypeScript · Tailwind CSS · MapLibre GL · deck.gl
 - **백엔드**: FastAPI · Pydantic · XGBoost · SHAP TreeExplainer · GeoPandas
-- **배포**: Vercel (프론트) · Railway (백엔드)
+- **배포**: Vercel (프론트) · Hugging Face Spaces / Docker (백엔드). 백엔드 다운 시 정적 스냅샷 fallback.
 
 ## 데이터 출처
 
