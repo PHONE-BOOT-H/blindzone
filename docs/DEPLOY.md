@@ -35,7 +35,7 @@
 3. **Environment Variables**:
    - `NEXT_PUBLIC_API_BASE_URL` = `https://HANANHAN-blindzone-backend.hf.space`
    - (없어도 정적 fallback은 동작하지만, 라이브 시뮬레이터를 위해 넣을 것)
-4. **Deploy** → URL 확보 (예: `https://blindzone.vercel.app`).
+4. **Deploy** → URL 확보 (production: `https://blindzone-brown.vercel.app`).
 5. CORS: `api/main.py`에 `https://*.vercel.app` regex 허용됨. 커스텀 도메인이면 추가.
 
 ## 3. 데모 동작 검증 (필수)
