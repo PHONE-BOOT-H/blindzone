@@ -8,6 +8,22 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 from pathlib import Path
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
+from docx.oxml.ns import qn
+
+
+def set_kfont(doc, font="맑은 고딕"):
+    """문서 기본 스타일에 한글 폰트 지정(기본 Calibri는 한글 글리프 없어 깨짐)."""
+    for name in ["Normal", "Title", "Heading 1", "Heading 2", "Light Grid Accent 1"]:
+        try:
+            st = doc.styles[name]
+        except KeyError:
+            continue
+        st.font.name = font
+        rpr = st.element.get_or_add_rPr()
+        rf = rpr.get_or_add_rFonts()
+        rf.set(qn("w:ascii"), font)
+        rf.set(qn("w:hAnsi"), font)
+        rf.set(qn("w:eastAsia"), font)
 
 ROOT = Path(__file__).resolve().parents[1].parent
 EV = ROOT / "docs" / "submission" / "evidence"
@@ -30,6 +46,7 @@ def pic(doc, name, width=6.2):
 
 # ───────────── 1) AI 활용 증빙 ─────────────
 d = Document()
+set_kfont(d)
 d.add_heading("AI 활용 증빙 — BlindZone", 0)
 d.add_paragraph("2026 국토교통 데이터 활용 경진대회 / 가점(AI 학습도구·AI 분석도구) 증빙자료")
 d.add_paragraph("라이브: https://blindzone-brown.vercel.app  ·  코드: https://github.com/PHONE-BOOT-H/blindzone")
@@ -87,6 +104,7 @@ print("saved:", out1)
 
 # ───────────── 2) 시제품 포트폴리오 ─────────────
 d2 = Document()
+set_kfont(d2)
 d2.add_heading("시제품 포트폴리오 — BlindZone", 0)
 d2.add_paragraph("2026 국토교통 데이터 활용 경진대회 / 제품·서비스 개발 분야 별첨")
 d2.add_paragraph("라이브: https://blindzone-brown.vercel.app  ·  백엔드: "
