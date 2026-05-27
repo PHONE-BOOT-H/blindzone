@@ -53,7 +53,8 @@ d.add_paragraph("2026 국토교통 데이터 활용 경진대회 / 가점 신청
 d.add_paragraph("라이브: https://blindzone-brown.vercel.app  ·  코드: https://github.com/PHONE-BOOT-H/blindzone")
 p = d.add_paragraph()
 p.add_run("가점 신청: ① AI 학습도구 = XGBoost 회귀(위험지수 학습·재현)  "
-          "② AI 분석도구 = SHAP(기여요인 분석)  ③ 데이터 융합(3종 + 119 교차검증). "
+          "② AI 분석도구 = SHAP(기여요인 분석). 데이터 융합(3종 + 119)은 §3에 구현 "
+          "내역으로 제시하며, '주관기관 융합데이터' 해당 여부는 운영사무국 확인 후 신청한다. "
           "생성형 AI(Claude Code)는 코드·문서 보조이며 데이터·지표·해석 판단은 사람이 수행.").bold = True
 
 d.add_heading("1. AI 학습도구 — XGBoost 회귀", level=1)
